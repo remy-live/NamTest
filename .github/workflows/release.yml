@@ -1,8 +1,12 @@
-# Publie une release a partir d'un tag "buildNN", avec le bundle compile en
-# piece jointe. Le texte de la release vient de l'annotation du tag : les notes
-# et le tag ne peuvent donc pas diverger.
+# Publie une release avec le bundle compile en piece jointe.
 #
-# Rien a fournir : GITHUB_TOKEN suffit, aucun secret a poser.
+# Deux facons de la declencher :
+#   - pousser un tag "buildNN" ;
+#   - lancer ce workflow a la main (onglet Actions), en donnant le nom du tag :
+#     il est alors CREE sur le commit courant.
+#
+# Le texte de la release vient de dist/NOTES-<tag>.md s'il existe, sinon de
+# l'annotation du tag. Rien a fournir : GITHUB_TOKEN suffit, aucun secret.
 name: Release
 
 on:
@@ -12,8 +16,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag a publier (ex. build66)"
+        description: "Nom du tag a publier (ex. build66)"
         required: true
+        default: build66
 
 permissions:
   contents: write
@@ -29,16 +34,19 @@ jobs:
       - name: Choisir le tag
         id: tag
         run: |
-          if [ -n "${{ github.event.inputs.tag }}" ]; then
-            echo "nom=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "nom=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          fi
+          nom="${{ github.event.inputs.tag }}"
+          [ -n "$nom" ] || nom="${GITHUB_REF_NAME}"
+          echo "nom=$nom" >> "$GITHUB_OUTPUT"
 
-      - name: Reprendre les notes dans l'annotation du tag
+      - name: Rassembler les notes
+        id: notes
         run: |
-          git fetch --force --tags
-          git tag -l --format='%(contents)' "${{ steps.tag.outputs.nom }}" > /tmp/notes.md
+          nom="${{ steps.tag.outputs.nom }}"
+          if [ -f "dist/NOTES-$nom.md" ]; then
+            cp "dist/NOTES-$nom.md" /tmp/notes.md
+          else
+            git tag -l --format='%(contents)' "$nom" > /tmp/notes.md
+          fi
           if [ ! -s /tmp/notes.md ]; then
             echo "Bundle LV2 compile pour aarch64 (MOD Dwarf)." > /tmp/notes.md
           fi
@@ -48,7 +56,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ steps.tag.outputs.nom }}" \
+          nom="${{ steps.tag.outputs.nom }}"
+          # --target cree le tag sur ce commit s'il n'existe pas encore
+          gh release create "$nom" \
             dist/nam-test-*.tar.gz \
-            --title "NAM TEST ${{ steps.tag.outputs.nom }}" \
+            --target "$GITHUB_SHA" \
+            --title "NAM TEST $nom" \
             --notes-file /tmp/notes.md
