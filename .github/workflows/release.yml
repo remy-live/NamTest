@@ -1,0 +1,54 @@
+# Publie une release a partir d'un tag "buildNN", avec le bundle compile en
+# piece jointe. Le texte de la release vient de l'annotation du tag : les notes
+# et le tag ne peuvent donc pas diverger.
+#
+# Rien a fournir : GITHUB_TOKEN suffit, aucun secret a poser.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'build*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag a publier (ex. build66)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Choisir le tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            echo "nom=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "nom=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Reprendre les notes dans l'annotation du tag
+        run: |
+          git fetch --force --tags
+          git tag -l --format='%(contents)' "${{ steps.tag.outputs.nom }}" > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            echo "Bundle LV2 compile pour aarch64 (MOD Dwarf)." > /tmp/notes.md
+          fi
+          cat /tmp/notes.md
+
+      - name: Publier
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.nom }}" \
+            dist/nam-test-*.tar.gz \
+            --title "NAM TEST ${{ steps.tag.outputs.nom }}" \
+            --notes-file /tmp/notes.md
