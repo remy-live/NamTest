@@ -260,7 +260,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 199;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "Rang du modele dans le dossier NAM Models";
+		rdfs:comment "Rank of the model inside the NAM Models folder";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -271,7 +271,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Modele suivant";
+		rdfs:comment "Next model";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -282,7 +282,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Modele precedent";
+		rdfs:comment "Previous model";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -293,7 +293,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Relire le dossier des modeles";
+		rdfs:comment "Re-read the model folder";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -324,7 +324,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -1;
 		lv2:maximum 2;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "-1 echec, 0 rien, 1 en cours, 2 charge";
+		rdfs:comment "-1 failed, 0 idle, 1 loading, 2 loaded";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -335,7 +335,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Parcourir SANS charger";
+		rdfs:comment "Browse WITHOUT loading";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -346,7 +346,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le modele parcouru";
+		rdfs:comment "Load the browsed model";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -377,7 +377,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 1";
+		rdfs:comment "Load favorite 1";
 		pg:group <@NAM_LV2_ID@#groupe1>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -388,7 +388,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 2";
+		rdfs:comment "Load favorite 2";
 		pg:group <@NAM_LV2_ID@#groupe2>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -399,7 +399,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 3";
+		rdfs:comment "Load favorite 3";
 		pg:group <@NAM_LV2_ID@#groupe3>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -410,7 +410,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 4";
+		rdfs:comment "Load favorite 4";
 		pg:group <@NAM_LV2_ID@#groupe4>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -421,7 +421,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 5";
+		rdfs:comment "Load favorite 5";
 		pg:group <@NAM_LV2_ID@#groupe5>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -432,7 +432,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 6";
+		rdfs:comment "Load favorite 6";
 		pg:group <@NAM_LV2_ID@#groupe6>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -443,7 +443,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 7";
+		rdfs:comment "Load favorite 7";
 		pg:group <@NAM_LV2_ID@#groupe7>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -454,7 +454,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 8";
+		rdfs:comment "Load favorite 8";
 		pg:group <@NAM_LV2_ID@#groupe8>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -465,7 +465,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 9";
+		rdfs:comment "Load favorite 9";
 		pg:group <@NAM_LV2_ID@#groupe9>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -476,7 +476,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Charger le favori 10";
+		rdfs:comment "Load favorite 10";
 		pg:group <@NAM_LV2_ID@#groupe10>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -487,7 +487,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 1;
 		lv2:maximum 10;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "Emplacement vise par Store";
+		rdfs:comment "Slot that Store writes into";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -498,7 +498,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele courant dans l'emplacement Slot";
+		rdfs:comment "Store the current model into the slot named by Slot";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -509,7 +509,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain hors favori";
+		rdfs:comment "Gain outside any favorite";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -540,7 +540,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Passer au favori non vide suivant";
+		rdfs:comment "Step to the next non-empty favorite";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -551,7 +551,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 1";
+		rdfs:comment "Gain of favorite 1";
 		pg:group <@NAM_LV2_ID@#groupe1>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -562,7 +562,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 2";
+		rdfs:comment "Gain of favorite 2";
 		pg:group <@NAM_LV2_ID@#groupe2>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -573,7 +573,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 3";
+		rdfs:comment "Gain of favorite 3";
 		pg:group <@NAM_LV2_ID@#groupe3>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -584,7 +584,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 4";
+		rdfs:comment "Gain of favorite 4";
 		pg:group <@NAM_LV2_ID@#groupe4>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -595,7 +595,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 5";
+		rdfs:comment "Gain of favorite 5";
 		pg:group <@NAM_LV2_ID@#groupe5>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -606,7 +606,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 6";
+		rdfs:comment "Gain of favorite 6";
 		pg:group <@NAM_LV2_ID@#groupe6>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -617,7 +617,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 7";
+		rdfs:comment "Gain of favorite 7";
 		pg:group <@NAM_LV2_ID@#groupe7>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -628,7 +628,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 8";
+		rdfs:comment "Gain of favorite 8";
 		pg:group <@NAM_LV2_ID@#groupe8>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -639,7 +639,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 9";
+		rdfs:comment "Gain of favorite 9";
 		pg:group <@NAM_LV2_ID@#groupe9>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -650,7 +650,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -20.0;
 		lv2:maximum 20.0;
 		units:unit units:db;
-		rdfs:comment "Gain du favori 10";
+		rdfs:comment "Gain of favorite 10";
 		pg:group <@NAM_LV2_ID@#groupe10>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -761,7 +761,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 1;
 		lv2:maximum 10;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "Nombre de favoris parcourus par Fav Next";
+		rdfs:comment "How many favorites Fav Next steps through";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -772,7 +772,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 999;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "unites = etat, dizaines = capacites de l'ecran";
+		rdfs:comment "units = state, tens = the screen's capabilities";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -783,7 +783,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 1";
+		rdfs:comment "Name displayed for favorite 1";
 		pg:group <@NAM_LV2_ID@#groupe1>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -808,10 +808,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -833,27 +833,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -899,17 +899,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 57;
@@ -919,7 +919,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 2";
+		rdfs:comment "Name displayed for favorite 2";
 		pg:group <@NAM_LV2_ID@#groupe2>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -944,10 +944,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -969,27 +969,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1035,17 +1035,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 58;
@@ -1055,7 +1055,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 3";
+		rdfs:comment "Name displayed for favorite 3";
 		pg:group <@NAM_LV2_ID@#groupe3>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1080,10 +1080,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1105,27 +1105,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1171,17 +1171,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 59;
@@ -1191,7 +1191,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 4";
+		rdfs:comment "Name displayed for favorite 4";
 		pg:group <@NAM_LV2_ID@#groupe4>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1216,10 +1216,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1241,27 +1241,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1307,17 +1307,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 60;
@@ -1327,7 +1327,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 5";
+		rdfs:comment "Name displayed for favorite 5";
 		pg:group <@NAM_LV2_ID@#groupe5>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1352,10 +1352,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1377,27 +1377,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1443,17 +1443,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 61;
@@ -1463,7 +1463,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 6";
+		rdfs:comment "Name displayed for favorite 6";
 		pg:group <@NAM_LV2_ID@#groupe6>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1488,10 +1488,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1513,27 +1513,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1579,17 +1579,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 62;
@@ -1599,7 +1599,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 7";
+		rdfs:comment "Name displayed for favorite 7";
 		pg:group <@NAM_LV2_ID@#groupe7>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1624,10 +1624,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1649,27 +1649,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1715,17 +1715,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 63;
@@ -1735,7 +1735,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 8";
+		rdfs:comment "Name displayed for favorite 8";
 		pg:group <@NAM_LV2_ID@#groupe8>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1760,10 +1760,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1785,27 +1785,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1851,17 +1851,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 64;
@@ -1871,7 +1871,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 9";
+		rdfs:comment "Name displayed for favorite 9";
 		pg:group <@NAM_LV2_ID@#groupe9>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -1896,10 +1896,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -1921,27 +1921,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -1987,17 +1987,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 65;
@@ -2007,7 +2007,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 124;
 		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori 10";
+		rdfs:comment "Name displayed for favorite 10";
 		pg:group <@NAM_LV2_ID@#groupe10>;
 		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
 		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
@@ -2032,10 +2032,10 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
 		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
 		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
-		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
-		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
-		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
-		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM"; rdf:value 23 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM1"; rdf:value 24 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM2"; rdf:value 25 ];
+		lv2:scalePoint [ rdfs:label "RHYTHM3"; rdf:value 26 ];
 		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
 		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
 		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
@@ -2057,27 +2057,27 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
 		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
-		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
-		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
-		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
-		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
-		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
-		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
-		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
-		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
-		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
-		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
-		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
+		lv2:scalePoint [ rdfs:label "TONE"; rdf:value 48 ];
+		lv2:scalePoint [ rdfs:label "TONE 1"; rdf:value 49 ];
+		lv2:scalePoint [ rdfs:label "TONE 2"; rdf:value 50 ];
+		lv2:scalePoint [ rdfs:label "TONE 3"; rdf:value 51 ];
+		lv2:scalePoint [ rdfs:label "TONE 4"; rdf:value 52 ];
+		lv2:scalePoint [ rdfs:label "TONE 5"; rdf:value 53 ];
+		lv2:scalePoint [ rdfs:label "TONE 6"; rdf:value 54 ];
+		lv2:scalePoint [ rdfs:label "TONE 7"; rdf:value 55 ];
+		lv2:scalePoint [ rdfs:label "TONE 8"; rdf:value 56 ];
+		lv2:scalePoint [ rdfs:label "AMP"; rdf:value 57 ];
+		lv2:scalePoint [ rdfs:label "AMP 1"; rdf:value 58 ];
+		lv2:scalePoint [ rdfs:label "AMP 2"; rdf:value 59 ];
+		lv2:scalePoint [ rdfs:label "AMP 3"; rdf:value 60 ];
+		lv2:scalePoint [ rdfs:label "AMP 4"; rdf:value 61 ];
 		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
-		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
-		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
-		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
-		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
+		lv2:scalePoint [ rdfs:label "OUTRO"; rdf:value 63 ];
+		lv2:scalePoint [ rdfs:label "VERSE"; rdf:value 64 ];
+		lv2:scalePoint [ rdfs:label "CHORUS"; rdf:value 65 ];
+		lv2:scalePoint [ rdfs:label "BRIDGE"; rdf:value 66 ];
 		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
-		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
+		lv2:scalePoint [ rdfs:label "ARP"; rdf:value 68 ];
 		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
 		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
 		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
@@ -2123,17 +2123,17 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
 		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
 		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
-		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
-		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
-		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
-		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
-		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
-		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
-		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
-		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
+		lv2:scalePoint [ rdfs:label "VELVET"; rdf:value 114 ];
+		lv2:scalePoint [ rdfs:label "FAT"; rdf:value 115 ];
+		lv2:scalePoint [ rdfs:label "THIN"; rdf:value 116 ];
+		lv2:scalePoint [ rdfs:label "SCOOPED"; rdf:value 117 ];
+		lv2:scalePoint [ rdfs:label "MIDS"; rdf:value 118 ];
+		lv2:scalePoint [ rdfs:label "WARM"; rdf:value 119 ];
+		lv2:scalePoint [ rdfs:label "BRIGHT"; rdf:value 120 ];
+		lv2:scalePoint [ rdfs:label "DARK"; rdf:value 121 ];
 		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
-		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
-		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
+		lv2:scalePoint [ rdfs:label "BITE"; rdf:value 123 ];
+		lv2:scalePoint [ rdfs:label "SMOOTH"; rdf:value 124 ];
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 66;
@@ -2143,7 +2143,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 1";
+		rdfs:comment "Store the playing model into favorite 1";
 		pg:group <@NAM_LV2_ID@#groupe1>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2154,7 +2154,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 2";
+		rdfs:comment "Store the playing model into favorite 2";
 		pg:group <@NAM_LV2_ID@#groupe2>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2165,7 +2165,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 3";
+		rdfs:comment "Store the playing model into favorite 3";
 		pg:group <@NAM_LV2_ID@#groupe3>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2176,7 +2176,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 4";
+		rdfs:comment "Store the playing model into favorite 4";
 		pg:group <@NAM_LV2_ID@#groupe4>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2187,7 +2187,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 5";
+		rdfs:comment "Store the playing model into favorite 5";
 		pg:group <@NAM_LV2_ID@#groupe5>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2198,7 +2198,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 6";
+		rdfs:comment "Store the playing model into favorite 6";
 		pg:group <@NAM_LV2_ID@#groupe6>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2209,7 +2209,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 7";
+		rdfs:comment "Store the playing model into favorite 7";
 		pg:group <@NAM_LV2_ID@#groupe7>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2220,7 +2220,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 8";
+		rdfs:comment "Store the playing model into favorite 8";
 		pg:group <@NAM_LV2_ID@#groupe8>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2231,7 +2231,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 9";
+		rdfs:comment "Store the playing model into favorite 9";
 		pg:group <@NAM_LV2_ID@#groupe9>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2242,7 +2242,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Ranger le modele qui joue dans le favori 10";
+		rdfs:comment "Store the playing model into favorite 10";
 		pg:group <@NAM_LV2_ID@#groupe10>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
@@ -2253,7 +2253,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Mesurer et egaliser le volume de tous les favoris";
+		rdfs:comment "Measure and even out the volume of every favorite";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -2264,7 +2264,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -1;
 		lv2:maximum 2;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "-1 echec, 0 rien, 1 en cours, 2 fait";
+		rdfs:comment "-1 failed, 0 idle, 1 running, 2 done";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -2275,7 +2275,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -12.0;
 		lv2:maximum 12.0;
 		units:unit units:db;
-		rdfs:comment "Correction mesuree du favori actif";
+		rdfs:comment "Measured correction for the active favorite";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:InputPort, lv2:CVPort, mod:CVPort;
@@ -2285,7 +2285,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:default 0.0;
 		lv2:minimum 0.0;
 		lv2:maximum 10.0;
-		rdfs:comment "Choisit le favori par tension : la plage 0-10 V est decoupee en 10 bandes egales";
+		rdfs:comment "Picks the favorite by voltage: the 0-10 V range is cut into 10 equal bands";
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
 		lv2:index 80;
@@ -2295,7 +2295,7 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum 0;
 		lv2:maximum 10;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "Favori dont Auto dB Slot porte la correction - tourne une fois par seconde";
+		rdfs:comment "Favorite whose correction Auto dB Slot carries - rotates once per second";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -2306,29 +2306,29 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -12.0;
 		lv2:maximum 12.0;
 		units:unit units:db;
-		rdfs:comment "Correction mesuree du favori designe par Fav dB Slot";
+		rdfs:comment "Measured correction for the favorite named by Fav dB Slot";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 82;
 		lv2:symbol "auto_apply";
-		lv2:name "Appliquer";
+		lv2:name "Apply";
 		lv2:default 0;
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Poser les corrections mesurees dans les boutons de gain";
+		rdfs:comment "Put the measured corrections into the gain knobs";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
 		lv2:index 83;
 		lv2:symbol "auto_undo";
-		lv2:name "Annuler";
+		lv2:name "Undo";
 		lv2:default 0;
 		lv2:minimum 0;
 		lv2:maximum 1;
 		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
-		rdfs:comment "Remettre les gains d'avant l'application";
+		rdfs:comment "Put back the gains from before the apply";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
@@ -2339,6 +2339,6 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:minimum -1;
 		lv2:maximum 2;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "0 l'hote ne permet pas d'ecrire dans les boutons, 1 possible, 2 accepte, -1 refuse";
+		rdfs:comment "0 the host does not allow writing the knobs, 1 possible, 2 accepted, -1 refused";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	].

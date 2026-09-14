@@ -130,12 +130,12 @@
 }
 
 
-/* = PANNEAU DE REGLAGES (gabarit settings.html)
+/* = SETTINGS PANEL (the settings.html template)
 ================================================
-   Ce bloc avait ete PERDU en restaurant la feuille de style d'origine depuis
-   le depot : sans lui, le gabarit s'affiche sans grille ni ordre, les listes
-   restent deployees et se recouvrent, et les clics n'atteignent plus les
-   fichiers. */
+   This block was once LOST while restoring the original stylesheet from the
+   repository: without it the template shows up with no grid and no order, the
+   lists stay unfolded and overlap each other, and clicks no longer reach the
+   files. */
 .x-set{{{cns}}} .x-sec-grid {
     display:flex;
     flex-wrap:wrap;
@@ -152,10 +152,9 @@
     border-top:1px solid rgba(255,255,255,0.12);
 }
 
-/* Le selecteur de fichier de mod-ui est une LISTE DEROULEE EN PLACE, pas une
-   ligne qui s'ouvre. Vouloir la refermer et la faire flotter la faisait
-   deborder sur la ligne suivante. On lui donne donc une hauteur fixe, et le
-   defilement se fait A L'INTERIEUR. */
+/* mod-ui's file picker is a LIST UNFOLDED IN PLACE, not a row that opens.
+   Trying to fold it up and float it made it spill onto the next row. So it
+   gets a fixed height, and the scrolling happens INSIDE it. */
 .x-set{{{cns}}} .x-file {
     flex:0 0 330px;
     height:132px;
@@ -190,7 +189,7 @@
 }
 .x-set{{{cns}}} .x-file [mod-role="enumeration-option"]:hover { background:#4a3a5a; color:#fff; }
 
-/* les cellules voisines s'alignent en haut de la ligne, pas au milieu */
+/* neighbouring cells line up at the top of the row, not in the middle */
 .x-set{{{cns}}} .x-sec-grid { align-items:flex-start; }
 
 .x-set{{{cns}}} .x-file[mod-parameter-uri$="#model"] { order:10; }
@@ -206,15 +205,15 @@
 .x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav10"] { order:200; }
 
 
-/* = PEDALE : n'y montrer que le MODELE COURANT
-   Le gabarit d'origine boucle sur tous les parametres fichier ; avec dix
-   favoris cela faisait onze listes empilees qui debordaient du boitier.
-   Les favoris se reglent dans le panneau. */
+/* = THE PEDAL: show nothing there but the CURRENT MODEL
+   The original template loops over every file parameter; with ten favorites
+   that made eleven stacked lists spilling out of the box. The favorites are
+   set in the panel. */
 .mod-pedal-nam [mod-parameter-uri*="#fav"] { display:none !important; }
 
-/* = PANNEAU : borner TOUTES les listes, pas seulement celles de fichiers
-   Un widget enumere de mod-ui s'affiche deroule en place. Sans hauteur fixe,
-   les listes de noms recouvrent les lignes voisines. */
+/* = PANEL: bound EVERY list, not only the file ones
+   A mod-ui enumerated widget shows up unfolded in place. With no fixed height
+   the name lists cover the neighbouring rows. */
 .x-set{{{cns}}} .mod-enumerated {
     height:132px;
     overflow:hidden;
@@ -236,15 +235,15 @@
     cursor:pointer;
 }
 
-/* toutes les cellules d'une ligne font la meme hauteur, alignees en haut */
+/* every cell in a row shares the same height, aligned to the top */
 
 
-/* Ne RIEN imposer aux cellules natives : mod-ui place ses etiquettes en absolu
-   a l'interieur, et une hauteur ou une largeur forcee les fait chevaucher le
-   bouton. On se contente de ne pas les laisser flotter. */
+/* Impose NOTHING on the native cells: mod-ui places its labels absolutely
+   inside them, and a forced height or width makes them overlap the knob. We
+   settle for simply not letting them float. */
 .x-set{{{cns}}} .x-cell { float:none !important; position:relative; }
 
-/* Seules les listes sont bornees -- elles seules debordent. */
+/* Only the lists are bounded -- they are the only ones that spill. */
 .x-set{{{cns}}} .mod-enumerated { height:126px; overflow:hidden; }
 .x-set{{{cns}}} .mod-enumerated .mod-enumerated-list {
     position:static;
@@ -253,16 +252,16 @@
 }
 
 
-/* Correction mesuree par l'auto-gain : une cellule etroite posee a cote de la
-   liste des noms. Le champ de saisie libre qui l'accompagnait a ete retire --
-   les noms se choisissent dans la liste. */
-.x-set{{{cns}}} .nam-mesure {
+/* The correction measured by the auto-gain: a narrow cell set beside the name
+   list. The free-text field that used to go with it has been removed -- names
+   are picked from the list. */
+.x-set{{{cns}}} .nam-measured {
     flex:0 0 110px;
     height:126px;
     padding-top:8px;
     box-sizing:border-box;
 }
-.x-set{{{cns}}} .nam-mesure-title {
+.x-set{{{cns}}} .nam-measured-title {
     display:block;
     font-size:10px;
     color:#9a7fb8;
@@ -276,4 +275,4 @@
     font-size:11px;
     color:#6e6e6e;
 }
-.x-set{{{cns}}} .nam-auto.nam-auto-vif { color:#8fd98f; }
+.x-set{{{cns}}} .nam-auto.nam-auto-live { color:#8fd98f; }

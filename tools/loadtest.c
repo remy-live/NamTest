@@ -1,8 +1,8 @@
-/* Banc d'essai hors machine : charge le plugin, l'instancie avec TOUS ses
- * ports branches, le fait tourner, et signale ce qui tombe.
+/* Off-machine test bench: loads the plugin, instantiates it with ALL of its
+ * ports connected, runs it, and reports whatever falls over.
  *
- * But : reproduire ici le SEGV qui tue jack2 sur le Dwarf, plutot que de faire
- * installer une variante de plus a chaque hypothese.
+ * The point: reproduce here the SEGV that kills jack2 on the Dwarf, rather
+ * than having one more variant installed for every hypothesis.
  */
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -17,11 +17,11 @@
 #include "lv2/options/options.h"
 #include "lv2/buf-size/buf-size.h"
 
-/* tous les ports du descripteur : NUM_PORTS_TOTAL dans src/nam_plugin.h */
+/* every port of the descriptor: NUM_PORTS_TOTAL in src/nam_plugin.h */
 #define N_PORTS 85
 #define N_SAMPLES 256
 
-/* --- urid map minimal --- */
+/* --- a minimal urid map --- */
 static char* uris[4096];
 static uint32_t n_uris = 0;
 
@@ -34,7 +34,7 @@ static LV2_URID map_uri(LV2_URID_Map_Handle h, const char* uri)
 	return ++n_uris;
 }
 
-/* --- worker : on execute le travail TOUT DE SUITE, comme un hote simple --- */
+/* --- worker: the work runs STRAIGHT AWAY, like a simple host would --- */
 static const LV2_Worker_Interface* worker_iface = NULL;
 static LV2_Handle instance = NULL;
 
@@ -59,13 +59,13 @@ int main(int argc, char** argv)
 	if (argc < 2) { fprintf(stderr, "usage: %s plugin.so\n", argv[0]); return 2; }
 
 	void* lib = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL);
-	if (!lib) { fprintf(stderr, "dlopen : %s\n", dlerror()); return 1; }
+	if (!lib) { fprintf(stderr, "dlopen: %s\n", dlerror()); return 1; }
 
 	LV2_Descriptor_Function df = (LV2_Descriptor_Function)dlsym(lib, "lv2_descriptor");
-	if (!df) { fprintf(stderr, "lv2_descriptor introuvable\n"); return 1; }
+	if (!df) { fprintf(stderr, "lv2_descriptor not found\n"); return 1; }
 
 	const LV2_Descriptor* d = df(0);
-	if (!d) { fprintf(stderr, "descripteur nul\n"); return 1; }
+	if (!d) { fprintf(stderr, "null descriptor\n"); return 1; }
 	printf("URI    %s\n", d->URI);
 
 	LV2_URID_Map map = { NULL, map_uri };
@@ -87,13 +87,13 @@ int main(int argc, char** argv)
 
 	printf("instantiate...\n"); fflush(stdout);
 	instance = d->instantiate(d, 48000.0, "/tmp/", features);
-	if (!instance) { fprintf(stderr, "instantiate a renvoye NULL\n"); return 1; }
+	if (!instance) { fprintf(stderr, "instantiate returned NULL\n"); return 1; }
 
 	if (d->extension_data)
 		worker_iface = (const LV2_Worker_Interface*)d->extension_data(LV2_WORKER__interface);
-	printf("worker : %s\n", worker_iface ? "present" : "absent");
+	printf("worker: %s\n", worker_iface ? "present" : "absent");
 
-	/* tampons : audio, atomes, et un flottant par port de controle */
+	/* buffers: audio, atoms, and one float per control port */
 	static float audio_in[N_SAMPLES], audio_out[N_SAMPLES];
 	static float ctrl[N_PORTS];
 	static uint8_t atom_in[8192], atom_out[8192];
@@ -116,12 +116,12 @@ int main(int argc, char** argv)
 	printf("run x20...\n"); fflush(stdout);
 	for (int i = 0; i < 20; i++)
 	{
-		/* l'hote reinitialise la sequence de sortie a chaque cycle */
+		/* the host resets the output sequence on every cycle */
 		*(uint32_t*)atom_out = sizeof(atom_out) - 8;
 		d->run(instance, N_SAMPLES);
 	}
 
-	printf("appuis sur les commandes...\n"); fflush(stdout);
+	printf("pressing every control...\n"); fflush(stdout);
 	for (uint32_t p = 7; p < N_PORTS; p++)
 	{
 		ctrl[p] = 1.0f;
@@ -136,6 +136,6 @@ int main(int argc, char** argv)
 	printf("cleanup...\n"); fflush(stdout);
 	d->cleanup(instance);
 	dlclose(lib);
-	printf("TERMINE SANS PLANTAGE\n");
+	printf("FINISHED WITHOUT CRASHING\n");
 	return 0;
 }

@@ -1,12 +1,13 @@
-# Publie une release avec le bundle compile en piece jointe.
+# Publishes a release with the compiled bundle attached.
 #
-# Deux facons de la declencher :
-#   - pousser un tag "buildNN" ;
-#   - lancer ce workflow a la main (onglet Actions), en donnant le nom du tag :
-#     il est alors CREE sur le commit courant.
+# Two ways to set it off:
+#   - push a "buildNN" tag;
+#   - run this workflow by hand (Actions tab), giving it the tag name: the tag
+#     is then CREATED on the current commit.
 #
-# Le texte de la release vient de dist/NOTES-<tag>.md s'il existe, sinon de
-# l'annotation du tag. Rien a fournir : GITHUB_TOKEN suffit, aucun secret.
+# The release text comes from dist/NOTES-<tag>.md when that file exists, and
+# from the tag's annotation otherwise. Nothing to provide: GITHUB_TOKEN is
+# enough, no secret needed.
 name: Release
 
 on:
@@ -16,55 +17,55 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Nom du tag a publier (ex. build66)"
+        description: "Name of the tag to publish (e.g. build67)"
         required: true
-        default: build66
+        default: build67
 
 permissions:
   contents: write
 
 jobs:
-  publier:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Choisir le tag
+      - name: Pick the tag
         id: tag
         run: |
-          nom="${{ github.event.inputs.tag }}"
-          [ -n "$nom" ] || nom="${GITHUB_REF_NAME}"
-          echo "nom=$nom" >> "$GITHUB_OUTPUT"
+          name="${{ github.event.inputs.tag }}"
+          [ -n "$name" ] || name="${GITHUB_REF_NAME}"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
 
-      - name: Rassembler les notes
+      - name: Gather the notes
         id: notes
         run: |
-          nom="${{ steps.tag.outputs.nom }}"
-          if [ -f "dist/NOTES-$nom.md" ]; then
-            cp "dist/NOTES-$nom.md" /tmp/notes.md
+          name="${{ steps.tag.outputs.name }}"
+          if [ -f "dist/NOTES-$name.md" ]; then
+            cp "dist/NOTES-$name.md" /tmp/notes.md
           else
-            git tag -l --format='%(contents)' "$nom" > /tmp/notes.md
+            git tag -l --format='%(contents)' "$name" > /tmp/notes.md
           fi
           if [ ! -s /tmp/notes.md ]; then
-            echo "Bundle LV2 compile pour aarch64 (MOD Dwarf)." > /tmp/notes.md
+            echo "LV2 bundle built for aarch64 (MOD Dwarf)." > /tmp/notes.md
           fi
           cat /tmp/notes.md
 
-      - name: Publier
+      - name: Publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          nom="${{ steps.tag.outputs.nom }}"
-          # Republier un numero deja sorti doit REMPLACER, pas echouer : la
-          # release et son tag sont refaits sur le commit courant.
-          if gh release view "$nom" > /dev/null 2>&1; then
-            gh release delete "$nom" --yes --cleanup-tag
+          name="${{ steps.tag.outputs.name }}"
+          # Republishing a number that is already out must REPLACE it, not
+          # fail: the release and its tag are remade on the current commit.
+          if gh release view "$name" > /dev/null 2>&1; then
+            gh release delete "$name" --yes --cleanup-tag
           fi
-          # --target pose le tag sur ce commit
-          gh release create "$nom" \
+          # --target puts the tag on this commit
+          gh release create "$name" \
             dist/nam_test_*.tar.gz \
             --target "$GITHUB_SHA" \
-            --title "NAM TEST $nom" \
+            --title "NAM TEST $name" \
             --notes-file /tmp/notes.md

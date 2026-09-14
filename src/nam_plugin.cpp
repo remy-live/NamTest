@@ -61,16 +61,16 @@ namespace NAM {
 		for (int i = 0; i < NUM_FAVS; i++)
 			favNameChoice[i].store(0, std::memory_order_release);
 
-		// tout annoncer au premier passage : sans cela l'hote ne sait rien des
-		// chemins et ne les ecrira pas dans la pedalboard
+		// announce everything on the first pass: without this the host knows
+		// nothing of the paths and will not write them into the pedalboard
 		favDirty.store((1u << NUM_FAVS) - 1, std::memory_order_release);
 
-		// seuil de l'appui long converti une fois pour toutes en echantillons
+		// long-press threshold, turned into samples once and for all
 		longPressSamples = (uint32_t)(sampleRate * LONG_PRESS_MS / 1000.0);
 		longPressMaxSamples = (uint32_t)(sampleRate * LONG_PRESS_MAX_MS / 1000.0);
-		ecranPeriode = (uint32_t)(sampleRate * 0.25);	// 4 rafraichissements par seconde
-		popupHold = (uint64_t)(sampleRate * 3.0);	// silence de 3 s pendant un plein ecran
-		tracePeriode = (uint32_t)(sampleRate * 2.0);	// etat ecrit toutes les 2 s
+		screenPeriod = (uint32_t)(sampleRate * 0.25);	// 4 refreshes per second
+		popupHold = (uint64_t)(sampleRate * 3.0);	// 3 s of silence during a full screen
+		tracePeriod = (uint32_t)(sampleRate * 2.0);	// state written every 2 s
 
 		loader.SetExternalSampleRate((int)sampleRate);
 
@@ -88,9 +88,9 @@ namespace NAM {
 				portreq = static_cast<const LV2_ControlInputPort_Change_Request*>(
 					features[i]->data);
 
-				// 1 des l'initialisation : sinon 0 melange "l'hote ne le
-				// permet pas" et "on n'a jamais demande"
-				kxEtat = (portreq != nullptr && portreq->request_change != nullptr) ? 1 : 0;
+				// 1 right from init: otherwise 0 conflates "the host does not
+				// allow it" with "we never asked"
+				kxState = (portreq != nullptr && portreq->request_change != nullptr) ? 1 : 0;
 			}
 
 			if (std::string(features[i]->URI) == std::string(LV2_HMI__WidgetControl))
@@ -141,17 +141,17 @@ namespace NAM {
 		uris.model_Path = map->map(map->handle, MODEL_URI);
 		uris.atom_String = map->map(map->handle, LV2_ATOM__String);
 		uris.favs_String = map->map(map->handle, PlUGIN_URI "#favorites");
-		// Rang choisi dans la liste pour chaque favori. Cle SEPAREE des chemins :
-		// un etat ancien n'en a pas, et ce qu'on y lit reste clair a l'oeil nu.
+		// Rank picked in the list for each favorite. A key SEPARATE from the
+		// paths: an older state has none, and what it holds stays readable.
 		uris.favNames_String = map->map(map->handle, PlUGIN_URI "#favnames");
 
 		{
-			// PIEGE PAYE CHER : cette table etait ecrite a la main avec HUIT
-			// entrees quand NUM_FAVS est passe a DIX. Les deux dernieres
-			// valaient nullptr, la fonction de correspondance les
-			// deferencait, et le serveur audio mourait a l'ajout de l'effet.
-			// Elle est desormais construite a partir de NUM_FAVS, donc elle ne
-			// peut plus se desynchroniser.
+			// A TRAP PAID FOR DEARLY: this table was written by hand with EIGHT
+			// entries when NUM_FAVS moved to TEN. The last two were nullptr,
+			// the mapping function dereferenced them, and the audio server
+			// died as soon as the effect was added.
+			// It is built from NUM_FAVS now, so it can no longer drift out of
+			// step.
 			static const char* favUris[NUM_FAVS] = {
 				PlUGIN_URI "#fav1", PlUGIN_URI "#fav2", PlUGIN_URI "#fav3",
 				PlUGIN_URI "#fav4", PlUGIN_URI "#fav5", PlUGIN_URI "#fav6",
@@ -160,11 +160,11 @@ namespace NAM {
 			};
 
 			static_assert(sizeof(favUris) / sizeof(favUris[0]) == NUM_FAVS,
-				"la table des URI de favoris doit compter exactement NUM_FAVS entrees");
+				"the favorite URI table must hold exactly NUM_FAVS entries");
 
 			for (int i = 0; i < NUM_FAVS; i++)
 			{
-				// garde-fou : ne jamais passer un pointeur nul a la table des URI
+				// guard rail: never pass a null pointer to the URI mapper
 				uris.fav_Path[i] = (favUris[i] != nullptr)
 					? map->map(map->handle, favUris[i]) : 0;
 			}
@@ -178,10 +178,10 @@ namespace NAM {
 
 	// runs on non-RT, can block or use [de]allocations
 
-	// Parcourt MODEL_DIR sur deux niveaux et garde les fichiers de modele.
-	// Tourne dans le thread du WORKER, jamais dans le thread audio.
-	// d_type plutot que stat() : stat n'existe comme symbole que depuis
-	// GLIBC_2.33 alors que la machine plafonne a 2.27.
+	// Walks MODEL_DIR two levels deep and keeps the model files.
+	// Runs on the WORKER thread, never on the audio thread.
+	// d_type rather than stat(): stat only exists as a symbol from
+	// GLIBC_2.33 on, while the machine caps at 2.27.
 	void Plugin::scan_models()
 	{
 		static const char* exts[] = { ".nam", ".nammodel", ".aidax", ".aidadspmodel", ".json" };
@@ -200,8 +200,8 @@ namespace NAM {
 			return false;
 		};
 
-		// std::function pour pouvoir recurser : une lambda auto ne peut pas
-		// s'appeler elle-meme (son type n'est pas encore deduit)
+		// std::function so it can recurse: an auto lambda cannot call
+		// itself (its own type is not deduced yet)
 		std::function<void(const std::string&, bool)> scan_dir =
 			[&](const std::string& dir, bool recurse)
 		{
@@ -222,8 +222,8 @@ namespace NAM {
 
 				if (ent->d_type == DT_UNKNOWN)
 				{
-					// systeme de fichiers qui ne renseigne pas d_type :
-					// un opendir d'essai tranche, sans appeler stat.
+					// a file system that does not fill in d_type: a trial
+					// opendir settles it, without calling stat.
 					DIR* t = opendir(full.c_str());
 					isDir = (t != nullptr);
 					if (t != nullptr)
@@ -248,7 +248,7 @@ namespace NAM {
 
 		std::sort(modelFiles.begin(), modelFiles.end());
 
-		// Retrouver le rang du modele deja charge, s'il est dans la liste
+		// Find the rank of the already loaded model, if it is in the list
 		int found = -1;
 		for (size_t i = 0; i < modelFiles.size(); i++)
 		{
@@ -261,11 +261,11 @@ namespace NAM {
 
 		selectedIndex.store(found, std::memory_order_release);
 
-		// rang de chaque favori, recalcule sur le CHEMIN : ajouter ou retirer
-		// d'autres modeles ne casse donc aucun favori
+		// each favorite's rank, recomputed from the PATH: adding or removing
+		// other models therefore breaks no favorite
 		for (int f = 0; f < NUM_FAVS; f++)
 		{
-			int rang = -1;
+			int rank = -1;
 
 			if (favPaths[f][0] != '\0')
 			{
@@ -273,13 +273,13 @@ namespace NAM {
 				{
 					if (modelFiles[i] == favPaths[f])
 					{
-						rang = (int)i;
+						rank = (int)i;
 						break;
 					}
 				}
 			}
 
-			favIndexes[f].store(rang, std::memory_order_release);
+			favIndexes[f].store(rank, std::memory_order_release);
 		}
 
 		modelCount.store((int)modelFiles.size(), std::memory_order_release);
@@ -334,8 +334,8 @@ namespace NAM {
 
 					lv2_log_error(&nam->logger, "Unable to load model from: '%s'\n", msg->path);
 
-					// la journalisation ne ressort pas sur le Dwarf : on rend
-					// l'echec visible par un port de sortie
+					// logging does not come out on the Dwarf: the failure is
+					// made visible through an output port instead
 					nam->loadStatus.store(-1, std::memory_order_release);
 					nam->pendingIndex.store(-1, std::memory_order_release);
 				}
@@ -347,7 +347,7 @@ namespace NAM {
 
 			case kWorkTypeAutoGain:
 			{
-				static_cast<NAM::Plugin*>(instance)->mesurer_niveaux();
+				static_cast<NAM::Plugin*>(instance)->measure_levels();
 
 				return LV2_WORKER_SUCCESS;
 			}
@@ -362,11 +362,11 @@ namespace NAM {
 					return LV2_WORKER_SUCCESS;
 
 				fprintf(f, "build      %s\n", nam_build_tag());
-				fprintf(f, "hmi        %s\n", nam->hmi ? "oui" : "NON");
+				fprintf(f, "hmi        %s\n", nam->hmi ? "yes" : "NO");
 
 				if (nam->hmi != nullptr)
 				{
-					fprintf(f, "hmi.size   %lu (seuil popup %lu)\n",
+					fprintf(f, "hmi.size   %lu (popup threshold %lu)\n",
 						(unsigned long)nam->hmi->size,
 						(unsigned long)LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE);
 					fprintf(f, "set_label  %s\n", nam->hmi->set_label ? "present" : "ABSENT");
@@ -374,56 +374,56 @@ namespace NAM {
 					fprintf(f, "popup_msg  %s\n", nam->hmi->popup_message ? "present" : "ABSENT");
 				}
 
-				fprintf(f, "\nports assignes (index: caps momentane)\n");
+				fprintf(f, "\naddressed ports (index: caps momentary)\n");
 
-				bool aucun = true;
+				bool none = true;
 				for (int k = 0; k < NUM_PORTS_TOTAL; k++)
 				{
 					if (nam->hmiAddr[k] == nullptr)
 						continue;
 
-					aucun = false;
-					fprintf(f, "  port %-3d caps=%d%s%s%s%s%s momentane=%s\n", k,
+					none = false;
+					fprintf(f, "  port %-3d caps=%d%s%s%s%s%s momentary=%s\n", k,
 						nam->hmiCaps[k],
 						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_LED) ? " led" : "",
-						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Label) ? " LIBELLE" : "",
-						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Value) ? " valeur" : "",
-						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Unit) ? " unite" : "",
-						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Indicator) ? " barre" : "",
-						nam->hmiMomentary[k] ? "oui" : "non");
+						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Label) ? " LABEL" : "",
+						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Value) ? " value" : "",
+						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Unit) ? " unit" : "",
+						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Indicator) ? " bar" : "",
+						nam->hmiMomentary[k] ? "yes" : "no");
 				}
 
-				if (aucun)
-					fprintf(f, "  AUCUN -- refaire l'assignation apres installation\n");
+				if (none)
+					fprintf(f, "  NONE -- redo the addressing after installing\n");
 
-				fprintf(f, "\npatch:Put recus       %d\n", nam->putVus.load(std::memory_order_acquire));
-				fprintf(f, "\nkx (ecriture des boutons) : %d  (0 absent, 1 present, 2 accepte, -1 refuse)\n",
-					nam->kxEtat);
-				fprintf(f, "\nauto-gain  etat=%d (-1 echec, 0 jamais lance, 1 en cours, 2 fait)\n",
+				fprintf(f, "\npatch:Put received    %d\n", nam->putsSeen.load(std::memory_order_acquire));
+				fprintf(f, "\nkx (writing the knobs) : %d  (0 absent, 1 available, 2 accepted, -1 refused)\n",
+					nam->kxState);
+				fprintf(f, "\nauto-gain  state=%d (-1 failed, 0 never run, 1 running, 2 done)\n",
 					nam->autoState.load(std::memory_order_acquire));
 
 				for (int i = 0; i < NUM_FAVS; i++)
 				{
-					fprintf(f, "  fav %-2d correction %+.2f dB  fichier %s\n", i + 1,
+					fprintf(f, "  fav %-2d correction %+.2f dB  file %s\n", i + 1,
 						nam->autoGainMilli[i].load(std::memory_order_acquire) / 1000.0,
-						nam->favPaths[i][0] != '\0' ? nam->favPaths[i] : "(vide)");
+						nam->favPaths[i][0] != '\0' ? nam->favPaths[i] : "(empty)");
 				}
 
-				fprintf(f, "\nfav actif  %d\n", nam->activeFav.load(std::memory_order_acquire));
-				fprintf(f, "libelle 31 \"%s\"\n", nam->hmiLbl[IDX_FAV_BROWSE]);
-				fprintf(f, "valeur  31 \"%s\"\n", nam->hmiVal[IDX_FAV_BROWSE]);
+				fprintf(f, "\nactive fav %d\n", nam->activeFav.load(std::memory_order_acquire));
+				fprintf(f, "label %d  \"%s\"\n", IDX_FAV_BROWSE, nam->hmiLbl[IDX_FAV_BROWSE]);
+				fprintf(f, "value %d  \"%s\"\n", IDX_FAV_BROWSE, nam->hmiVal[IDX_FAV_BROWSE]);
 
 				for (int i = 0; i < NUM_FAVS; i++)
 				{
 					char n[MAX_FAV_NAME];
-					nam->nom_favori(i + 1, n, sizeof(n));
+					nam->fav_display_name(i + 1, n, sizeof(n));
 
-					const int choix =
+					const int choice =
 						nam->favNameChoice[i].load(std::memory_order_acquire);
 
-					fprintf(f, "fav %-2d nom=\"%s\" liste=%d \"%s\"\n", i + 1, n, choix,
-						(choix > 0 && choix < FAV_NAME_COUNT)
-							? FAV_NAME_TABLE[choix] : "AUTO");
+					fprintf(f, "fav %-2d name=\"%s\" list=%d \"%s\"\n", i + 1, n, choice,
+						(choice > 0 && choice < FAV_NAME_COUNT)
+							? FAV_NAME_TABLE[choice] : "AUTO");
 				}
 
 				fclose(f);
@@ -461,7 +461,7 @@ namespace NAM {
 				{
 					index = nam->selectedIndex.load(std::memory_order_acquire) + msg->delta;
 
-					// la liste boucle : apres le dernier on revient au premier
+					// the list wraps: after the last one comes the first
 					while (index < 0)
 						index += count;
 
@@ -476,11 +476,11 @@ namespace NAM {
 
 				memcpy(load.path, path.c_str(), path.size() + 1);
 
-				// on n'inscrit PAS encore le rang : il ne vaudra que si le
-				// chargement aboutit, sinon Current avancerait sans que le son change
+				// the rank is NOT written yet: it only counts if the load
+				// lands, otherwise Current would move on with no change in sound
 				nam->pendingIndex.store(index, std::memory_order_release);
 				nam->loadStatus.store(1, std::memory_order_release);
-				nam->activeFav.store(0, std::memory_order_release);	// on quitte les favoris
+				nam->activeFav.store(0, std::memory_order_release);	// we are leaving the favorites
 
 				return work(instance, respond, handle, sizeof(load), &load);
 			}
@@ -495,16 +495,16 @@ namespace NAM {
 
 				memcpy(nam->favPaths[msg->slot], msg->path, MAX_FILE_NAME);
 
-				int rang = -1;
+				int rank = -1;
 				for (size_t i = 0; i < nam->modelFiles.size(); i++)
 				{
 					if (nam->modelFiles[i] == nam->favPaths[msg->slot])
 					{
-						rang = (int)i;
+						rank = (int)i;
 						break;
 					}
 				}
-				nam->favIndexes[msg->slot].store(rang, std::memory_order_release);
+				nam->favIndexes[msg->slot].store(rank, std::memory_order_release);
 
 				return LV2_WORKER_SUCCESS;
 			}
@@ -517,8 +517,8 @@ namespace NAM {
 				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
 					return LV2_WORKER_SUCCESS;
 
-				// Le rang vient du message : il a ete saisi au moment de l'appui,
-				// donc AVANT que ce meme appui ne charge le favori.
+				// The rank comes from the message: it was read when the press
+				// happened, so BEFORE that same press loaded the favorite.
 				const int index = msg->index;
 				const std::string& src = (index >= 0 && index < (int)nam->modelFiles.size())
 					? nam->modelFiles[index] : nam->currentModelPath;
@@ -527,8 +527,8 @@ namespace NAM {
 				{
 					memcpy(nam->favPaths[msg->slot], src.c_str(), src.size() + 1);
 
-					// prevenir l'interface : le selecteur de ce favori doit
-					// afficher le nouveau nom
+					// warn the UI: this favorite's selector has to show
+					// the new name
 					nam->favDirty.fetch_or(1u << msg->slot, std::memory_order_release);
 					nam->favIndexes[msg->slot].store(
 						(index >= 0 && index < (int)nam->modelFiles.size()) ? index : -1,
@@ -553,13 +553,13 @@ namespace NAM {
 
 				if (len == 0 || len >= MAX_FILE_NAME)
 				{
-					// emplacement vide : on ne touche a rien
+					// empty slot: nothing is touched
 					nam->loadStatus.store(-1, std::memory_order_release);
 
 					return LV2_WORKER_SUCCESS;
 				}
 
-				// retrouver son rang pour que Current reste coherent
+				// find its rank again so Current stays consistent
 				int found = -1;
 				for (size_t i = 0; i < nam->modelFiles.size(); i++)
 				{
@@ -667,13 +667,13 @@ namespace NAM {
 			loader.SetDefaultQualityScaleFactor(*(ports.quality_scale));
 		}
 
-		// ---- navigation dans les modeles du dossier ----------------------
-		// Le thread audio ne lit JAMAIS la liste : il envoie un rang au worker,
-		// qui resout le chemin et charge. Aucun verrou, aucune allocation ici.
+		// ---- navigating the models in the folder ------------------------
+		// The audio thread NEVER reads the list: it sends a rank to the worker,
+		// which resolves the path and loads. No lock, no allocation here.
 
 		if (!scanRequested)
 		{
-			// premier passage : demander le scan du dossier
+			// first pass: ask for the folder scan
 			LV2ScanMsg scan = { kWorkTypeScan };
 			schedule->schedule_work(schedule->handle, sizeof(scan), &scan);
 			scanRequested = true;
@@ -692,9 +692,9 @@ namespace NAM {
 			prevRescan = rescanNow;
 		}
 
-		// Next et Prev n'ont jamais agi qu'au front montant : c'est deja le bon
-		// comportement pour un momentane comme pour un clic du navigateur qui
-		// laisse le bouton a 1.
+		// Next and Prev have only ever acted on the rising edge: that is already
+		// the right behaviour for a momentary switch and for a browser click
+		// that leaves the button at 1.
 		const float nextNow = ports.step_next != nullptr ? *(ports.step_next) : 0.0f;
 		if (nextNow > 0.5f && prevStepNext <= 0.5f)
 		{
@@ -714,8 +714,8 @@ namespace NAM {
 		const float indexNow = ports.model_index != nullptr ? *(ports.model_index) : 0.0f;
 		if (!indexPortSeen)
 		{
-			// premier passage : on prend la valeur telle quelle sans rien charger,
-			// sinon un port a zero ecraserait le modele restaure de l'etat
+			// first pass: take the value as it stands and load nothing,
+			// otherwise a port at zero would wipe the model restored from state
 			indexPortSeen = true;
 			prevIndexPort = indexNow;
 		}
@@ -735,7 +735,7 @@ namespace NAM {
 		if (ports.load_status != nullptr)
 			*(ports.load_status) = (float)loadStatus.load(std::memory_order_acquire);
 
-		// ---- parcours sans charger, puis validation --------------------
+		// ---- browse without loading, then commit ------------------------
 		const int count = modelCount.load(std::memory_order_acquire);
 
 		const float browseNow = ports.browse != nullptr ? *(ports.browse) : 0.0f;
@@ -758,7 +758,7 @@ namespace NAM {
 		}
 		prevAction = actionNow;
 
-		// ---- les huit favoris : court = charger, long = ranger ----------
+		// ---- the favorites: short press loads, long press stores --------
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
 			if (ports.fav[i] == nullptr)
@@ -768,7 +768,7 @@ namespace NAM {
 
 			if (!favSeen[i])
 			{
-				// premier passage : on note la valeur sans rien declencher
+				// first pass: record the value without triggering anything
 				favSeen[i] = true;
 				prevFav[i] = now;
 				continue;
@@ -781,10 +781,10 @@ namespace NAM {
 				if (relachement && favHeldSamples[i] >= longPressSamples
 					&& favHeldSamples[i] <= longPressMaxSamples)
 				{
-					// APPUI LONG RELACHE : on range ce qui jouait avant l'appui.
-					// Le rangement attend le relachement, et refuse au-dela du
-					// plafond : un bouton laisse sur ON dans le navigateur ne
-					// peut donc plus ecraser un favori tout seul.
+					// LONG PRESS RELEASED: store what was playing before the press.
+					// Storing waits for the release, and is refused beyond the
+					// ceiling: a button left ON in the browser can therefore no
+					// longer overwrite a favorite on its own.
 					LV2FavMsg msg = { kWorkTypeFavStore, i,
 						favPressIndex[i], favPressGain[i] };
 					schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
@@ -793,9 +793,9 @@ namespace NAM {
 				else if (!(relachement && favHeldSamples[i] < longPressMaxSamples)
 					&& activeFav.load(std::memory_order_acquire) != i + 1)
 				{
-					// Charge ce favori -- sauf au relachement d'un switch
-					// momentane, et sauf s'il joue deja : recharger un modele
-					// pour rien coute tres cher en CPU.
+					// Load this favorite -- except on the release of a momentary
+					// switch, and except when it already plays: reloading a model
+					// for nothing costs a great deal of CPU.
 					favPressIndex[i] = selectedIndex.load(std::memory_order_acquire);
 					favPressGain[i] = appliedGainMilli.load(std::memory_order_acquire);
 
@@ -816,10 +816,10 @@ namespace NAM {
 		if (ports.browse_index != nullptr)
 			*(ports.browse_index) = (float)browseIndex.load(std::memory_order_acquire);
 
-		// ---- gain du favori actif --------------------------------------
-		// Chaque favori a MAINTENANT son propre port de gain : l'hote le
-		// sauvegarde avec la pedalboard, et le bouton montre toujours la vraie
-		// valeur. Plus de divergence possible entre l'affichage et le son.
+		// ---- the active favorite's gain ---------------------------------
+		// Each favorite NOW has its own gain port: the host saves it with the
+		// pedalboard, and the knob always shows the true value. No drift is
+		// possible any more between what is displayed and what is heard.
 		{
 			const int fav = activeFav.load(std::memory_order_acquire);
 			float g = 0.0f;
@@ -829,17 +829,17 @@ namespace NAM {
 				if (ports.favGain[fav - 1] != nullptr)
 					g = *(ports.favGain[fav - 1]);
 
-				// La correction n'est plus ajoutee ici : depuis qu'on sait la
-				// DEMANDER a l'hote, elle vit dans le bouton lui-meme. Sinon
-				// elle compterait deux fois.
+				// The correction is no longer added here: now that we can ASK the
+				// host for it, it lives in the knob itself. Otherwise it would
+				// count twice.
 			}
 			else if (ports.fav_gain != nullptr)
-				g = *(ports.fav_gain);	// hors favori : le gain general
+				g = *(ports.fav_gain);	// outside a favorite: the general gain
 
 			appliedGainMilli.store((int)(g * 1000.0f), std::memory_order_release);
 		}
 
-		// ---- parcours des seuls favoris --------------------------------
+		// ---- stepping through the favorites only ------------------------
 		const float favBrowseNow = ports.fav_browse != nullptr ? *(ports.fav_browse) : 0.0f;
 
 		if (favBrowseNow > 0.5f && favBrowseHeld < longPressMaxSamples)
@@ -853,54 +853,54 @@ namespace NAM {
 		else if (favBrowseNow != prevFavBrowse)
 		{
 			const bool relachement = (favBrowseNow <= 0.5f);
-			const bool piedBref = relachement && favBrowseHeld < longPressMaxSamples;
+			const bool shortPress = relachement && favBrowseHeld < longPressMaxSamples;
 
 			prevFavBrowse = favBrowseNow;
 
 			if (!relachement)
 				favBrowseHeld = 0;
 
-			// Le drapeau Momentary du host arrive VIDE sur cette machine : on
-			// reconnait donc l'appui du pied a la DUREE de l'etat haut. Un
-			// relachement apres un etat haut bref suit un appui qui a deja agi,
-			// on l'ignore -- sinon deux crans et deux chargements par pression.
-			// Un bouton du navigateur reste haut bien plus longtemps : le
-			// decocher agit normalement.
-			if (!piedBref)
+			// The host's Momentary flag arrives EMPTY on this machine: a foot press
+			// is therefore recognised by HOW LONG the state stays high. A release
+			// after a short high state follows a press that has already acted, so
+			// it is ignored -- otherwise two steps and two loads per press.
+			// A browser button stays high far longer: unticking it acts
+			// normally.
+			if (!shortPress)
 			{
 
-			// aller au favori NON VIDE suivant, en repartant du debut au bout
-			const int depart = activeFav.load(std::memory_order_acquire);
+			// go to the next NON-EMPTY favorite, wrapping round at the end
+			const int startFav = activeFav.load(std::memory_order_acquire);
 
-			int longueur = ports.cycle_count != nullptr ? (int)*(ports.cycle_count) : NUM_FAVS;
-			if (longueur < 1) longueur = 1;
-			if (longueur > NUM_FAVS) longueur = NUM_FAVS;
+			int cycleLen = ports.cycle_count != nullptr ? (int)*(ports.cycle_count) : NUM_FAVS;
+			if (cycleLen < 1) cycleLen = 1;
+			if (cycleLen > NUM_FAVS) cycleLen = NUM_FAVS;
 
-			bool trouve = false;
+			bool found = false;
 
-			for (int pas = 1; pas <= longueur; pas++)
+			for (int step = 1; step <= cycleLen; step++)
 			{
-				const int cible = ((depart - 1 + pas) % longueur + longueur) % longueur;
+				const int target = ((startFav - 1 + step) % cycleLen + cycleLen) % cycleLen;
 
-				if (favPaths[cible][0] == '\0')
+				if (favPaths[target][0] == '\0')
 					continue;
 
-				LV2FavMsg msg = { kWorkTypeFavLoad, cible, -1, 0 };
+				LV2FavMsg msg = { kWorkTypeFavLoad, target, -1, 0 };
 				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-				trouve = true;
+				found = true;
 				break;
 			}
 
-			if (!trouve)
+			if (!found)
 			{
-				// aucun favori rempli dans le cycle : le silence complet laissait
-				// croire a une panne, on le signale par le port d'etat
+				// no filled favorite in the cycle: plain silence looked like a
+				// breakdown, so it is reported through the status port
 				loadStatus.store(-1, std::memory_order_release);
 			}
 			}
 		}
 
-		// ---- annoncer a l'interface les favoris ranges au pied ----------
+		// ---- tell the UI about favorites stored with the foot -----------
 		{
 			unsigned bits = favDirty.exchange(0, std::memory_order_acquire);
 
@@ -912,8 +912,8 @@ namespace NAM {
 
 			if (bits != 0)
 			{
-				// un chemin a change : vider le cache d'affichage,
-				// sinon l'ecran garderait l'ancien libelle indefiniment
+				// a path has changed: clear the display cache, otherwise
+				// the screen would keep the old label for ever
 				for (int k = 0; k < NUM_PORTS_TOTAL; k++)
 				{
 					hmiLbl[k][0] = '\0';
@@ -922,10 +922,10 @@ namespace NAM {
 			}
 		}
 
-		// ---- enregistrement depuis l'interface web ---------------------
-		// L'interface web ecrit 1 puis 0 dans le port entre deux cycles audio :
-		// le front montant n'est jamais vu ici. On declenche donc sur tout
-		// CHANGEMENT de valeur, montant ou descendant.
+		// ---- storing from the web UI ------------------------------------
+		// The web UI writes 1 then 0 into the port between two audio cycles:
+		// the rising edge is never seen here. So anything that CHANGES the
+		// value fires, rising or falling.
 		const float storeNow = ports.store != nullptr ? *(ports.store) : 0.0f;
 		if (!storeSeen)
 		{
@@ -949,10 +949,10 @@ namespace NAM {
 		}
 
 		{
-			// ---- le nom d'un favori : un rang dans la liste ----------------
-			// L'hote garde ce rang avec la pedalboard comme n'importe quel
-			// reglage ; on en tient une copie, seule consultee par l'ecran, et
-			// tout changement repeint.
+			// ---- a favorite's name: a rank in the list ----------------------
+			// The host keeps that rank with the pedalboard like any other
+			// setting; we hold a copy, the only one the screen reads, and
+			// any change repaints.
 			for (int i = 0; i < NUM_FAVS; i++)
 			{
 				if (ports.favNamePort[i] == nullptr)
@@ -965,9 +965,9 @@ namespace NAM {
 					favNameSeen[i] = true;
 					prevFavName[i] = v;
 
-					// Valeur deja posee par l'hote : elle l'emporte sur celle
-					// qui vient de l'etat. Zero veut dire AUTO, c'est-a-dire
-					// « rien de choisi » : le rang restaure survit alors.
+					// A value the host has already posted wins over the one
+					// coming from the state. Zero means AUTO, that is to say
+					// "nothing picked": the restored rank then survives.
 					if (v > 0.0f)
 						favNameChoice[i].store((int)v, std::memory_order_release);
 
@@ -982,39 +982,39 @@ namespace NAM {
 				hmiLbl[IDX_FAV_FIRST + i][0] = '\0';
 				hmiVal[IDX_FAV_FIRST + i][0] = '\0';
 				hmiLbl[IDX_FAV_BROWSE][0] = '\0';
-				ecranFav.store(-1, std::memory_order_release);
+				screenFav.store(-1, std::memory_order_release);
 			}
 
-			// un etat vient d'etre repris : reposer les rangs dans les ports,
-			// une seule fois, et APRES avoir regarde ce que l'hote y avait mis
-			if (nomsARemettre.exchange(false, std::memory_order_acquire))
-				remettre_noms();
+			// a state has just been restored: put the ranks back into the
+			// ports, once, and AFTER seeing what the host had put there
+			if (namesToRestore.exchange(false, std::memory_order_acquire))
+				restore_name_ports();
 
 			const int fav = activeFav.load(std::memory_order_acquire);
-			const int aFaire = ecranFav.load(std::memory_order_acquire);
+			const int pending = screenFav.load(std::memory_order_acquire);
 
 			hmiPos += n_samples;
-			ecranCompteur += n_samples;
-			traceCompteur += n_samples;
+			screenCounter += n_samples;
+			traceCounter += n_samples;
 
-			if (traceCompteur >= tracePeriode)
+			if (traceCounter >= tracePeriod)
 			{
-				traceCompteur = 0;
+				traceCounter = 0;
 				LV2ScanMsg t = { kWorkTypeTrace };
 				schedule->schedule_work(schedule->handle, sizeof(t), &t);
 			}
 
-			// Deux raisons d'ecrire : le favori a change, ou le temps est venu.
-			// Le rafraichissement periodique est indispensable -- le firmware
-			// redessine ON/OFF a chaque changement de valeur du port et efface
-			// notre libelle. 4 envois/s, tres en dessous du budget de 25.
-			if (aFaire != fav || ecranCompteur >= ecranPeriode || ecranForce)
+			// Two reasons to write: the favorite changed, or the time has come.
+			// The periodic refresh is essential -- the firmware redraws ON/OFF
+			// on every port value change and wipes our label. 4 sends per
+			// second, well under the budget of 25.
+			if (pending != fav || screenCounter >= screenPeriod || screenForced)
 			{
-				// le plein ecran n'apparait QUE sur un vrai changement de favori
-				ecrire_ecran(fav, aFaire != fav && !ecranForce);
-				ecranForce = false;
-				ecranFav.store(fav, std::memory_order_release);
-				ecranCompteur = 0;
+				// the full screen shows up ONLY on a real change of favorite
+				write_screen(fav, pending != fav && !screenForced);
+				screenForced = false;
+				screenFav.store(fav, std::memory_order_release);
+				screenCounter = 0;
 			}
 		}
 
@@ -1027,7 +1027,7 @@ namespace NAM {
 				*(ports.favIndex[i]) = (float)favIndexes[i].load(std::memory_order_acquire);
 		}
 
-		// ---- un bouton de rangement par favori --------------------------
+		// ---- one store button per favorite ------------------------------
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
 			if (ports.favStore[i] == nullptr)
@@ -1042,9 +1042,9 @@ namespace NAM {
 				continue;
 			}
 
-			// Tout changement range, montant ou descendant : un clic du
-			// navigateur peut arriver dans les deux sens, et le rangement est
-			// idempotent -- le refaire deux fois ne coute rien.
+			// Any change stores, rising or falling: a browser click can come
+			// either way round, and storing is idempotent -- doing it twice
+			// costs nothing.
 			if (v != prevFavStore[i])
 			{
 				prevFavStore[i] = v;
@@ -1057,17 +1057,17 @@ namespace NAM {
 			}
 		}
 
-		// ---- selection du favori par tension ----------------------------
-		// La plage 0-10 V est decoupee en NUM_FAVS bandes egales. On ne charge
-		// qu'au CHANGEMENT de bande, avec une marge pour qu'une tension posee
-		// sur une frontiere ne fasse pas osciller le chargement.
+		// ---- picking the favorite by voltage ----------------------------
+		// The 0-10 V range is cut into NUM_FAVS equal bands. A load only happens
+		// when the band CHANGES, with a margin so that a voltage sitting on a
+		// boundary does not make the loading oscillate.
 		if (ports.cv_select != nullptr && n_samples > 0)
 		{
-			// LIRE LE PREMIER ECHANTILLON, jamais le dernier : quand rien n'est
-			// branche sur l'entree CV, l'hote peut n'allouer qu'une seule valeur.
-			// Lire l'indice n_samples-1 sortait alors du tampon -- et rebrancher
-			// les ports, ce que fait le deplacement d'un bloc, deplace ces
-			// tampons. C'est une lecture hors limites, donc un plantage.
+			// READ THE FIRST SAMPLE, never the last: when nothing is plugged into
+			// the CV input, the host may allocate a single value only. Reading
+			// index n_samples-1 then ran off the buffer -- and reconnecting the
+			// ports, which moving a block does, moves those buffers. That is an
+			// out-of-bounds read, so a crash.
 			const float volts = ports.cv_select[0];
 			const float largeur = 10.0f / (float)NUM_FAVS;
 
@@ -1076,13 +1076,13 @@ namespace NAM {
 			if (bande < 0) bande = 0;
 			if (bande >= NUM_FAVS) bande = NUM_FAVS - 1;
 
-			// marge : il faut depasser le dixieme de bande pour basculer
+			// margin: a tenth of a band has to be crossed to switch
 			const float centre = ((float)bande + 0.5f) * largeur;
 			const float ecart = volts > centre ? volts - centre : centre - volts;
 
-			if (bande != cvBande && ecart < largeur * 0.4f)
+			if (bande != cvBand && ecart < largeur * 0.4f)
 			{
-				cvBande = bande;
+				cvBand = bande;
 
 				if (favPaths[bande][0] != '\0')
 				{
@@ -1092,7 +1092,7 @@ namespace NAM {
 			}
 		}
 
-		// ---- lancement de la mesure automatique -------------------------
+		// ---- starting the automatic measurement -------------------------
 		const float autoNow = ports.auto_gain != nullptr ? *(ports.auto_gain) : 0.0f;
 
 		if (!autoGainSeen)
@@ -1120,14 +1120,14 @@ namespace NAM {
 				: 0.0f;
 		}
 
-		// ---- appliquer ou annuler les gains mesures ---------------------
-		if (appliquerDemande.exchange(false, std::memory_order_acquire))
+		// ---- apply or undo the measured gains ---------------------------
+		if (applyRequested.exchange(false, std::memory_order_acquire))
 		{
 			for (int i = 0; i < NUM_FAVS; i++)
-				gainAvant[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
+				gainBefore[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
 
-			gainSauve = true;
-			ecrire_gains(false);
+			gainSaved = true;
+			write_gains(false);
 		}
 
 		const float applyNow = ports.auto_apply != nullptr ? *(ports.auto_apply) : 0.0f;
@@ -1137,14 +1137,14 @@ namespace NAM {
 		{
 			prevAutoApply = applyNow;
 
-			// garder les valeurs d'avant pour pouvoir revenir en arriere
+			// keep the previous values so it can be undone
 			for (int i = 0; i < NUM_FAVS; i++)
 			{
-				gainAvant[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
+				gainBefore[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
 			}
 
-			gainSauve = true;
-			ecrire_gains(false);
+			gainSaved = true;
+			write_gains(false);
 		}
 
 		const float undoNow = ports.auto_undo != nullptr ? *(ports.auto_undo) : 0.0f;
@@ -1153,69 +1153,69 @@ namespace NAM {
 		else if (undoNow != prevAutoUndo)
 		{
 			prevAutoUndo = undoNow;
-			ecrire_gains(true);
+			write_gains(true);
 		}
 
-		// ---- canal de retour : la correction mesuree, favori par favori --
-		// Le panneau n'a qu'une valeur a la fois : on fait tourner un favori
-		// par seconde. db_slot dit duquel il s'agit, auto_db_slot porte sa
-		// correction. Les noms ne passent plus par la : ils sont dans un port
-		// de controle, que l'interface lit directement.
-		rotationCompteur += n_samples;
+		// ---- feedback channel: the measured correction, fav by fav ------
+		// The panel gets one value at a time: one favorite per second goes
+		// round. db_slot says which one it is, auto_db_slot carries its
+		// correction. Names no longer travel this way: they live in a control
+		// port, which the UI reads directly.
+		rotationCounter += n_samples;
 
-		if (rotationCompteur >= (uint32_t)sampleRate)
+		if (rotationCounter >= (uint32_t)sampleRate)
 		{
-			rotationCompteur = 0;
+			rotationCounter = 0;
 			rotationSlot = (rotationSlot + 1) % NUM_FAVS;
 		}
 
-		// La correction part EN PREMIER, le numero du favori un dixieme de
-		// seconde plus tard. C'est lui qui declenche l'affichage cote
-		// navigateur : il arrive donc toujours apres la valeur qu'il designe.
-		// Deux ports changes dans le meme cycle parviennent au navigateur dans
-		// un ordre que rien ne garantit, et la correction se posait alors dans
-		// la case du favori precedent. Ce numero change a chaque tour, meme
-		// quand deux favoris ont la meme correction : l'affichage se refait
-		// toujours.
+		// The correction goes out FIRST, the favorite's number a tenth of a
+		// second later. That number is what triggers the display in the
+		// browser, so it always arrives after the value it points at.
+		// Two ports changed in the same cycle reach the browser in an order
+		// nothing guarantees, and the correction used to land in the previous
+		// favorite's cell. This number changes on every turn, even when two
+		// favorites share the same correction: the display is therefore
+		// always redone.
 		if (ports.auto_db_slot != nullptr)
 			*(ports.auto_db_slot) =
 				autoGainMilli[rotationSlot].load(std::memory_order_acquire) / 1000.0f;
 
 		if (ports.db_slot != nullptr
-			&& rotationCompteur >= (uint32_t)(sampleRate * 0.1))
+			&& rotationCounter >= (uint32_t)(sampleRate * 0.1))
 			*(ports.db_slot) = (float)(rotationSlot + 1);
 
 		if (ports.kx_state != nullptr)
-			*(ports.kx_state) = (float)kxEtat;
+			*(ports.kx_state) = (float)kxState;
 
 		if (ports.hmi_state != nullptr)
 		{
-			// Un seul nombre qui dit tout : unites = etat, dizaines et au-dela
-			// = capacites annoncees par le firmware pour Fav Next.
-			//   etat : 0 pas de HMI, 1 HMI sans assignation, 2 assigne,
-			//          3 assigne + popup disponible
-			//   caps : 1 LED, 2 libelle, 4 valeur, 8 unite, 16 indicateur
-			// Exemple : 36 = capacites 3 (LED+libelle) et etat 6... non :
-			// on lit 2 + 10 x caps. 62 = caps 6 (libelle+valeur), etat 2.
-			int etat = 0;
+			// One number says it all: units = state, tens and beyond =
+			// capabilities the firmware announced for Fav Next.
+			//   state: 0 no HMI, 1 HMI with no addressing, 2 addressed,
+			//          3 addressed + popup available
+			//   caps : 1 LED, 2 label, 4 value, 8 unit, 16 indicator
+			// Read it as 2 + 10 x caps: 62 means caps 6 (label+value),
+			// state 2.
+			int state = 0;
 			int caps = 0;
 
 			if (hmi != nullptr)
 			{
-				etat = 1;
+				state = 1;
 
 				if (hmiAddr[IDX_FAV_BROWSE] != nullptr)
 				{
-					etat = 2;
+					state = 2;
 					caps = hmiCaps[IDX_FAV_BROWSE];
 
 					if ((hmi->size == 0 || hmi->size >= LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE)
 						&& hmi->popup_message != nullptr)
-						etat = 3;
+						state = 3;
 				}
 			}
 
-			*(ports.hmi_state) = (float)(etat + 10 * caps);
+			*(ports.hmi_state) = (float)(state + 10 * caps);
 		}
 
 		if (ports.store_count != nullptr)
@@ -1235,11 +1235,11 @@ namespace NAM {
 				}
 				else if (obj->body.otype == uris.patch_Put)
 				{
-					// UN PUT POUSSE UN OBJET ENTIER, propriete par propriete,
-					// dans un corps. C'est la forme qu'un hote emploie pour
-					// transmettre un etat complet -- un plugin qui ne lit que
-					// les Set jette ces valeurs en silence.
-					putVus.fetch_add(1, std::memory_order_release);
+					// A PUT PUSHES A WHOLE OBJECT, property by property, inside
+					// a body. That is the shape a host uses to hand over a
+					// complete state -- a plugin that reads Set messages only
+					// drops those values in silence.
+					putsSeen.fetch_add(1, std::memory_order_release);
 
 					const LV2_Atom_Object* corps = NULL;
 
@@ -1249,7 +1249,7 @@ namespace NAM {
 					{
 						LV2_ATOM_OBJECT_FOREACH(corps, prop)
 						{
-							appliquer_parametre(prop->key, &prop->value);
+							apply_parameter(prop->key, &prop->value);
 						}
 					}
 				}
@@ -1267,9 +1267,9 @@ namespace NAM {
 						file_path && file_path->type == uris.atom_Path &&
 						file_path->size > 0 && file_path->size < MAX_FILE_NAME)
 					{
-						const LV2_URID cible = ((const LV2_Atom_URID*)property)->body;
+						const LV2_URID target = ((const LV2_Atom_URID*)property)->body;
 
-						if (cible == uris.model_Path)
+						if (target == uris.model_Path)
 						{
 							LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
 							memcpy(msg.path, file_path + 1, file_path->size);
@@ -1278,10 +1278,10 @@ namespace NAM {
 						}
 						else
 						{
-							// l'un des huit favoris, choisi dans l'interface web
+							// one of the favorites, picked in the web UI
 							for (int i = 0; i < NUM_FAVS; i++)
 							{
-								if (cible != uris.fav_Path[i])
+								if (target != uris.fav_Path[i])
 									continue;
 
 								LV2FavPathMsg msg = { kWorkTypeFavSetPath, i, {} };
@@ -1457,8 +1457,8 @@ namespace NAM {
 
 		if (!nam->currentModel)
 		{
-			// pas de modele, mais les favoris meritent d'etre gardes
-			nam->ranger_favoris(store, handle);
+			// no model, but the favorites deserve to be kept
+			nam->store_favorites(store, handle);
 
 			return LV2_STATE_SUCCESS;
 		}
@@ -1478,7 +1478,7 @@ namespace NAM {
 		store(handle, nam->uris.model_Path, apath, strlen(apath) + 1, nam->uris.atom_Path,
 			LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-		nam->ranger_favoris(store, handle);
+		nam->store_favorites(store, handle);
 
 		LV2_State_Free_Path* free_path = (LV2_State_Free_Path *)lv2_features_data(features, LV2_STATE__freePath);
 
@@ -1501,7 +1501,7 @@ namespace NAM {
 	{
 		auto nam = static_cast<NAM::Plugin*>(instance);
 
-		// Reprendre les favoris avant le modele
+		// Take the favorites back before the model
 		{
 			size_t   fsize = 0;
 			uint32_t ftype = 0;
@@ -1522,9 +1522,9 @@ namespace NAM {
 
 					std::string line = joined.substr(start, cut - start);
 
-					// Les etats d'avant rangeaient apres une tabulation tantot
-					// un gain, tantot un nom tape. Les deux ont disparu : on
-					// coupe a la tabulation et on ne garde que le chemin.
+					// Older states put either a gain or a typed name after a
+					// tab. Both are gone: cut at the tab and keep nothing but
+					// the path.
 					const size_t tab = line.find('\t');
 
 					if (tab != std::string::npos)
@@ -1538,47 +1538,47 @@ namespace NAM {
 			}
 		}
 
-		// ---- le nom choisi dans la liste, favori par favori --------------
-		// Sans cela, rouvrir une pedalboard ramenerait tous les favoris a AUTO
-		// des que l'hote ne repose pas lui-meme la valeur du port.
+		// ---- the name picked in the list, favorite by favorite ----------
+		// Without this, reopening a pedalboard would drop every favorite back
+		// to AUTO as soon as the host does not repost the port value itself.
 		{
 			size_t   nsize = 0;
 			uint32_t ntype = 0;
 			uint32_t nflags = 0;
-			const void* noms = retrieve(handle, nam->uris.favNames_String,
+			const void* names = retrieve(handle, nam->uris.favNames_String,
 				&nsize, &ntype, &nflags);
 
-			if (noms != nullptr && ntype == nam->uris.atom_String && nsize > 0)
+			if (names != nullptr && ntype == nam->uris.atom_String && nsize > 0)
 			{
-				std::string liste(static_cast<const char*>(noms), nsize - 1);
+				std::string list(static_cast<const char*>(names), nsize - 1);
 				size_t start = 0;
 
 				for (int i = 0; i < NUM_FAVS; i++)
 				{
-					size_t cut = liste.find(',', start);
+					size_t cut = list.find(',', start);
 
 					if (cut == std::string::npos)
-						cut = liste.size();
+						cut = list.size();
 
-					const std::string champ = liste.substr(start, cut - start);
+					const std::string field = list.substr(start, cut - start);
 
-					if (!champ.empty())
+					if (!field.empty())
 					{
-						// zero compris : c'est AUTO, un choix comme un autre
-						const int rang = atoi(champ.c_str());
+						// zero included: that is AUTO, a choice like any other
+						const int rank = atoi(field.c_str());
 
-						if (rang >= 0 && rang < FAV_NAME_COUNT)
-							nam->favNameChoice[i].store(rang, std::memory_order_release);
+						if (rank >= 0 && rank < FAV_NAME_COUNT)
+							nam->favNameChoice[i].store(rank, std::memory_order_release);
 					}
 
-					if (cut >= liste.size())
+					if (cut >= list.size())
 						break;
 
 					start = cut + 1;
 				}
 
-				// le thread audio les reposera dans les ports de controle
-				nam->nomsARemettre.store(true, std::memory_order_release);
+				// the audio thread will put them back into the control ports
+				nam->namesToRestore.store(true, std::memory_order_release);
 			}
 		}
 
@@ -1651,21 +1651,20 @@ namespace NAM {
 		return result;
 	}
 
-	// Annonce a l'hote le chemin d'un favori : c'est ce qui fait apparaitre le
-	// NOM dans le selecteur de l'interface web apres un rangement au pied.
-	// Le host previent quand l'utilisateur assigne un port a un actuateur, et
-	// donne le jeton a employer pour ecrire sur cet afficheur. Sans ces deux
-	// fonctions declarees en extensionData, rien n'arrive jamais.
-	// Trois regles reprises du looper, chacune payee par un defaut observe :
-	//  1. n'envoyer que ce qui a CHANGE, pour rester sous le budget d'ecran ;
-	//  2. respecter les capacites annoncees a l'assignation ;
-	//  3. se TAIRE pendant un plein ecran -- un libelle ecrit apres un popup
-	//     repeint la page et efface le message.
+	// --- writing on the machine's screen ---------------------------------
+	// The host tells us when the user assigns a port to an actuator, and hands
+	// over the token to write on that display. Without the two notification
+	// functions declared in extensionData, nothing ever happens.
+	// Three rules taken from the looper, each paid for by a real fault:
+	//  1. send only what has CHANGED, to stay under the screen budget;
+	//  2. respect the capabilities announced at addressing time;
+	//  3. stay QUIET during a full screen -- a label written after a popup
+	//     repaints the page and wipes the message.
 	void Plugin::hmi_label(int port, const char* txt)
 	{
-		if (HMI_DESACTIVE) return;
+		if (HMI_DISABLED) return;
 
-		if (popup_en_cours()) return;
+		if (popup_showing()) return;
 		if (hmi == nullptr || port < 0 || port >= NUM_PORTS_TOTAL) return;
 		if (hmiAddr[port] == nullptr || hmi->set_label == nullptr) return;
 		if (!(hmiCaps[port] & LV2_HMI_AddressingCapability_Label)) return;
@@ -1678,9 +1677,9 @@ namespace NAM {
 
 	void Plugin::hmi_value(int port, const char* txt)
 	{
-		if (HMI_DESACTIVE) return;
+		if (HMI_DISABLED) return;
 
-		if (popup_en_cours()) return;
+		if (popup_showing()) return;
 		if (hmi == nullptr || port < 0 || port >= NUM_PORTS_TOTAL) return;
 		if (hmiAddr[port] == nullptr || hmi->set_value == nullptr) return;
 		if (!(hmiCaps[port] & LV2_HMI_AddressingCapability_Value)) return;
@@ -1691,48 +1690,48 @@ namespace NAM {
 		hmi->set_value(hmi->handle, hmiAddr[port], hmiVal[port]);
 	}
 
-	void Plugin::hmi_popup(int port, const char* titre, const char* message)
+	void Plugin::hmi_popup(int port, const char* title, const char* message)
 	{
-		if (HMI_DESACTIVE) return;
+		if (HMI_DISABLED) return;
 
 		if (hmi == nullptr || hmi->popup_message == nullptr) return;
 
-		// Le champ size dit ce que le host fournit vraiment, mais CERTAINS
-		// HOSTS LE LAISSENT A ZERO : ne refuser que s'il est renseigne ET trop
-		// petit. Mon test precedent (size >= ...) bloquait tout dans ce cas.
+		// The size field says what the host really provides, but SOME HOSTS
+		// LEAVE IT AT ZERO: refuse only when it is filled in AND too small.
+		// The earlier test (size >= ...) blocked everything in that case.
 		if (hmi->size != 0 && hmi->size < LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE)
 			return;
 
-		// le titre part EN LIBELLE d'abord : ecrit apres, il effacerait le popup
+		// the title goes out AS A LABEL first: written after, it would wipe the popup
 		popupAt = 0;
-		hmi_label(port, titre);
+		hmi_label(port, title);
 		popupAt = hmiPos;
 
 		if (port >= 0 && port < NUM_PORTS_TOTAL && hmiAddr[port] != nullptr)
 		{
 			hmi->popup_message(hmi->handle, hmiAddr[port],
-				LV2_HMI_Popup_Style_Inverted, titre, message);
+				LV2_HMI_Popup_Style_Inverted, title, message);
 			return;
 		}
 
-		// repli : n'importe quel port assigne fait l'affaire pour un plein ecran
+		// fallback: any addressed port will do for a full screen
 		for (int k = 0; k < NUM_PORTS_TOTAL; k++)
 		{
 			if (hmiAddr[k] != nullptr)
 			{
 				hmi->popup_message(hmi->handle, hmiAddr[k],
-					LV2_HMI_Popup_Style_Inverted, titre, message);
+					LV2_HMI_Popup_Style_Inverted, title, message);
 				return;
 			}
 		}
 	}
 
-	// Applique un couple propriete/valeur, qu'il vienne d'un patch:Set (une
-	// propriete a la fois) ou d'un patch:Put (un objet entier d'un coup).
-	// log2 approche, ecrit ici parce que log(), log10() et exp() de la glibc
-	// sont marques GLIBC_2.29 alors que la machine plafonne a 2.27. Meme piege
-	// que pow@GLIBC_2.29 sur l'accordeur. Precision largement suffisante pour
-	// un gain exprime en decibels.
+	// Applies a property/value pair, whether it comes from a patch:Set (one
+	// property at a time) or from a patch:Put (a whole object at once).
+	// Approximate log2, written here because glibc's log(), log10() and exp()
+	// are marked GLIBC_2.29 while the machine caps at 2.27. Same trap as
+	// pow@GLIBC_2.29 on the tuner. The precision is far more than enough for
+	// a gain expressed in decibels.
 	static float nam_log2f(float x)
 	{
 		if (x <= 0.0f)
@@ -1743,7 +1742,7 @@ namespace NAM {
 
 		const float e = (float)((int)((u.i >> 23) & 0xFF) - 127);
 
-		u.i = (u.i & 0x007FFFFFu) | 0x3F800000u;	// mantisse ramenee dans [1,2)
+		u.i = (u.i & 0x007FFFFFu) | 0x3F800000u;	// mantissa brought back into [1,2)
 		const float m = u.f;
 
 		const float p = -1.7417939f + (2.8212026f + (-1.4699568f
@@ -1757,31 +1756,31 @@ namespace NAM {
 		return nam_log2f(x) * 0.30102999566f;
 	}
 
-	// Mesure le niveau de sortie de chaque favori et en deduit une correction,
-	// pour qu'ils sonnent tous au meme volume.
+	// Measures every favorite's output level and derives a correction from it,
+	// so that they all sound at the same volume.
 	//
-	// Tourne dans le thread du WORKER : on charge un modele a part, on lui fait
-	// traiter un signal d'essai identique pour tous, on mesure l'energie, on
-	// libere. Le modele qui joue n'est jamais touche et le son continue.
+	// Runs on the WORKER thread: a model is loaded aside, made to process a
+	// test signal identical for all of them, its energy is measured, and it is
+	// freed. The playing model is never touched and the sound goes on.
 	//
-	// Le signal d'essai est un bruit deterministe (generateur a graine fixe) :
-	// deux mesures du meme modele donnent donc exactement le meme resultat.
-	void Plugin::mesurer_niveaux()
+	// The test signal is deterministic noise (fixed-seed generator): two runs
+	// over the same model therefore give exactly the same result.
+	void Plugin::measure_levels()
 	{
-		static constexpr int N_ESSAI = 8192;	// environ 170 ms a 48 kHz
+		static constexpr int N_ESSAI = 8192;	// about 170 ms at 48 kHz
 		static constexpr int N_BLOC = 256;
 
 		autoState.store(1, std::memory_order_release);
 
 		float entree[N_BLOC];
-		float sortie[N_BLOC];
-		float niveaux[NUM_FAVS];
-		bool mesure[NUM_FAVS] = {};
+		float out[N_BLOC];
+		float levels[NUM_FAVS];
+		bool measured[NUM_FAVS] = {};
 		int combien = 0;
 
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
-			niveaux[i] = 0.0f;
+			levels[i] = 0.0f;
 
 			if (favPaths[i][0] == '\0')
 				continue;
@@ -1791,20 +1790,20 @@ namespace NAM {
 			if (modele == nullptr)
 				continue;
 
-			// INDISPENSABLE : un modele frais ne sait pas quelle taille de bloc
-			// on va lui donner, et ses etats internes sont vides. Sans ces deux
-			// appels, le traitement ne donne rien d'exploitable -- c'est ce qui
-			// rendait la mesure muette.
+			// ESSENTIAL: a fresh model does not know what block size it will be
+			// given, and its internal states are empty. Without these two calls
+			// the processing yields nothing usable -- that is what made the
+			// measurement come out silent.
 			modele->SetMaxAudioBufferSize(N_BLOC);
 			modele->Prewarm();
 
-			// niveau recommande par le modele, comme dans le traitement normal
-			const float entreeDB = modele->GetRecommendedInputDBAdjustment();
-			const float sortieDB = modele->GetRecommendedOutputDBAdjustment();
-			const float gainEntree = powf(10.0f, entreeDB * 0.05f);
-			const float gainSortie = powf(10.0f, sortieDB * 0.05f);
+			// level recommended by the model, as in normal processing
+			const float inputDB = modele->GetRecommendedInputDBAdjustment();
+			const float outputDB = modele->GetRecommendedOutputDBAdjustment();
+			const float gainIn = powf(10.0f, inputDB * 0.05f);
+			const float gainOut = powf(10.0f, outputDB * 0.05f);
 
-			uint32_t graine = 12345u;
+			uint32_t seed = 12345u;
 			double somme = 0.0;
 			int comptes = 0;
 
@@ -1812,33 +1811,33 @@ namespace NAM {
 			{
 				for (int k = 0; k < N_BLOC; k++)
 				{
-					// generateur congruentiel : identique a chaque appel
-					graine = graine * 1103515245u + 12345u;
-					const float bruit = ((float)((graine >> 9) & 0xFFFF) / 32768.0f) - 1.0f;
+					// congruential generator: identical on every call
+					seed = seed * 1103515245u + 12345u;
+					const float bruit = ((float)((seed >> 9) & 0xFFFF) / 32768.0f) - 1.0f;
 
-					entree[k] = bruit * 0.25f * gainEntree;
+					entree[k] = bruit * 0.25f * gainIn;
 				}
 
-				modele->Process(entree, sortie, N_BLOC);
+				modele->Process(entree, out, N_BLOC);
 
-				// les premiers blocs servent a remplir les etats internes
+				// the first blocks serve to fill the internal states
 				if (fait >= N_BLOC * 4)
 				{
 					for (int k = 0; k < N_BLOC; k++)
 					{
-						const float v = sortie[k] * gainSortie;
+						const float v = out[k] * gainOut;
 						somme += (double)v * (double)v;
 						comptes++;
 					}
 				}
 			}
 
-			modele = nullptr;	// libere le modele d'essai
+			modele = nullptr;	// free the test model
 
 			if (comptes > 0 && somme > 0.0)
 			{
-				niveaux[i] = (float)sqrt(somme / (double)comptes);
-				mesure[i] = true;
+				levels[i] = (float)sqrt(somme / (double)comptes);
+				measured[i] = true;
 				combien++;
 			}
 		}
@@ -1849,16 +1848,16 @@ namespace NAM {
 			return;
 		}
 
-		// Reference : la MEDIANE des niveaux mesures. Elle repartit la
-		// correction au lieu de tout tirer vers le plus faible, et se calcule
-		// sans logarithme -- ceux de la glibc sont hors de portee ici.
+		// Reference: the MEDIAN of the measured levels. It spreads the
+		// correction instead of dragging everything down to the quietest, and
+		// needs no logarithm -- glibc's are out of reach here.
 		float tries[NUM_FAVS];
 		int n = 0;
 
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
-			if (mesure[i])
-				tries[n++] = niveaux[i];
+			if (measured[i])
+				tries[n++] = levels[i];
 		}
 
 		for (int a = 1; a < n; a++)
@@ -1880,15 +1879,15 @@ namespace NAM {
 
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
-			if (!mesure[i])
+			if (!measured[i])
 			{
 				autoGainMilli[i].store(0, std::memory_order_release);
 				continue;
 			}
 
-			float db = 20.0f * nam_log10f(reference / niveaux[i]);
+			float db = 20.0f * nam_log10f(reference / levels[i]);
 
-			// borne de securite : jamais plus de 12 dB dans un sens ou l'autre
+			// safety bound: never more than 12 dB either way
 			if (db > 12.0f) db = 12.0f;
 			if (db < -12.0f) db = -12.0f;
 
@@ -1897,24 +1896,24 @@ namespace NAM {
 
 		autoState.store(2, std::memory_order_release);
 
-		// Mesurer puis appliquer sont UN SEUL geste : demander l'ecriture des
-		// boutons des que la mesure aboutit. Le thread audio s'en chargera,
-		// l'extension kx ne s'appelle pas depuis le worker.
-		appliquerDemande.store(true, std::memory_order_release);
+		// Measuring then applying is ONE gesture: ask for the knobs to be
+		// written as soon as the measurement lands. The audio thread will do
+		// it, the kx extension cannot be called from the worker.
+		applyRequested.store(true, std::memory_order_release);
 	}
 
-	// Demande a l'hote de poser les gains mesures dans les boutons -- ou de
-	// remettre ceux d'avant. Le bouton bouge donc VRAIMENT sous les yeux, et la
-	// valeur est sauvegardee avec la pedalboard comme n'importe quel reglage.
-	void Plugin::ecrire_gains(bool annuler)
+	// Asks the host to put the measured gains into the knobs -- or to put the
+	// previous ones back. The knob therefore REALLY moves before your eyes, and
+	// the value is saved with the pedalboard like any other setting.
+	void Plugin::write_gains(bool undo)
 	{
 		if (portreq == nullptr || portreq->request_change == nullptr)
 		{
-			kxEtat = 0;	// l'hote ne fournit pas l'extension
+			kxState = 0;	// the host does not provide the extension
 			return;
 		}
 
-		kxEtat = 1;
+		kxState = 1;
 
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
@@ -1923,13 +1922,13 @@ namespace NAM {
 
 			const uint32_t index = (uint32_t)(34 + i);	// ports fav_gain_1..10
 
-			if (annuler)
+			if (undo)
 			{
-				if (gainSauve)
+				if (gainSaved)
 				{
 					const int rep = portreq->request_change(portreq->handle, index,
-						gainAvant[i]);
-					kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
+						gainBefore[i]);
+					kxState = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
 				}
 			}
 			else
@@ -1938,28 +1937,28 @@ namespace NAM {
 					autoGainMilli[i].load(std::memory_order_acquire) / 1000.0f;
 
 				const int rep = portreq->request_change(portreq->handle, index, correction);
-				kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
+				kxState = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
 			}
 		}
 
-		if (annuler)
+		if (undo)
 		{
-			gainSauve = false;
+			gainSaved = false;
 		}
 	}
 
-	void Plugin::appliquer_parametre(LV2_URID cible, const LV2_Atom* valeur)
+	void Plugin::apply_parameter(LV2_URID target, const LV2_Atom* value)
 	{
-		if (valeur == nullptr)
+		if (value == nullptr)
 			return;
 
-		if (valeur->type == uris.atom_Path && valeur->size > 0
-			&& valeur->size < MAX_FILE_NAME)
+		if (value->type == uris.atom_Path && value->size > 0
+			&& value->size < MAX_FILE_NAME)
 		{
-			if (cible == uris.model_Path)
+			if (target == uris.model_Path)
 			{
 				LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
-				memcpy(msg.path, valeur + 1, valeur->size);
+				memcpy(msg.path, value + 1, value->size);
 				pendingIndex.store(-1, std::memory_order_release);
 				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
 				return;
@@ -1967,11 +1966,11 @@ namespace NAM {
 
 			for (int i = 0; i < NUM_FAVS; i++)
 			{
-				if (cible != uris.fav_Path[i])
+				if (target != uris.fav_Path[i])
 					continue;
 
 				LV2FavPathMsg msg = { kWorkTypeFavSetPath, i, {} };
-				memcpy(msg.path, valeur + 1, valeur->size);
+				memcpy(msg.path, value + 1, value->size);
 				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
 				return;
 			}
@@ -1989,12 +1988,12 @@ namespace NAM {
 
 		nam->hmiAddr[index] = addressing;
 
-		// Capacites annoncees. Un info absent OU entierement a zero est traite
-		// comme « tout permis » : refuser d'ecrire dans ce cas revient a ne
-		// jamais rien afficher, et au pire le firmware ignore les envois.
-		const int capsAnnonces = (info != nullptr) ? (int)info->caps : 0;
+		// Announced capabilities. An info that is absent OR entirely zero is
+		// taken as "everything allowed": refusing to write then means never
+		// displaying anything, and at worst the firmware ignores the sends.
+		const int capsAnnounced = (info != nullptr) ? (int)info->caps : 0;
 
-		nam->hmiCaps[index] = (capsAnnonces != 0) ? capsAnnonces
+		nam->hmiCaps[index] = (capsAnnounced != 0) ? capsAnnounced
 			: (LV2_HMI_AddressingCapability_LED
 				| LV2_HMI_AddressingCapability_Label
 				| LV2_HMI_AddressingCapability_Value
@@ -2004,22 +2003,22 @@ namespace NAM {
 		nam->hmiMomentary[index] = (info != nullptr)
 			&& (info->flags & LV2_HMI_AddressingFlag_Momentary) != 0;
 
-		// Le firmware re-adresse les widgets a CHAQUE changement de page : on
-		// s'en sert comme signal pour oublier les caches et tout redessiner.
+		// The firmware re-addresses the widgets on EVERY page change: we use
+		// that as the signal to forget the caches and redraw everything.
 		for (int k = 0; k < NUM_PORTS_TOTAL; k++)
 		{
 			nam->hmiLbl[k][0] = '\0';
 			nam->hmiVal[k][0] = '\0';
 		}
 
-		nam->ecranFav.store(-1, std::memory_order_release);
+		nam->screenFav.store(-1, std::memory_order_release);
 	}
 
 	void Plugin::hmi_unaddressed(LV2_Handle handle, uint32_t index)
 	{
 		auto nam = static_cast<NAM::Plugin*>(handle);
 
-		// Interdit d'ecrire dans une addressing retiree : on l'oublie aussitot.
+		// Writing to a withdrawn addressing is forbidden: forget it at once.
 		if (index < NUM_PORTS_TOTAL)
 		{
 			nam->hmiAddr[index] = nullptr;
@@ -2028,30 +2027,28 @@ namespace NAM {
 		}
 	}
 
-	// Ecrit le nom du favori sur le libelle du footswitch Fav Next, et le fait
-	// apparaitre en plein ecran. Sept caracteres au maximum sur un footswitch,
-	// en capitales et sans accent : mesure du banc, pas une preference.
-	// Nom affichable d'un favori : le NOM LIBRE saisi dans l'interface s'il
-	// existe, sinon le nom du fichier sans son dossier ni son extension.
-	// Capitales, sans accent : le firmware ne dessine pas au-dela de 127.
-	void Plugin::nom_favori(int fav, char* sortie, size_t taille) const
+	// A favorite's displayable name: the one picked in the list, otherwise the
+	// file name without its folder or its extension. Capitals and no accents:
+	// the firmware draws nothing above 127, and a footswitch label holds seven
+	// characters -- measured on the bench, not a matter of taste.
+	void Plugin::fav_display_name(int fav, char* out, size_t size) const
 	{
-		sortie[0] = '\0';
+		out[0] = '\0';
 
 		if (fav < 1 || fav > NUM_FAVS)
 			return;
 
-		// Deux sources, dans cet ordre :
-		//  1. le nom CHOISI DANS LA LISTE -- seul canal qui traverse l'image
-		//     Starless : un parametre de type chaine n'y redescend pas jusqu'au
-		//     plugin, alors qu'un port de controle enumere passe toujours ;
-		//  2. le nom du fichier, sans dossier ni extension.
+		// Two sources, in this order:
+		//  1. the name PICKED IN THE LIST -- the only channel that crosses the
+		//     Starless image, where a string parameter does not come back down
+		//     to the plugin, while an enumerated control port always does;
+		//  2. the file name, without folder or extension.
 		const char* src = "";
 
-		const int choix = favNameChoice[fav - 1].load(std::memory_order_acquire);
+		const int choice = favNameChoice[fav - 1].load(std::memory_order_acquire);
 
-		if (choix > 0 && choix < FAV_NAME_COUNT)
-			src = FAV_NAME_TABLE[choix];
+		if (choice > 0 && choice < FAV_NAME_COUNT)
+			src = FAV_NAME_TABLE[choice];
 
 		if (src[0] == '\0')
 		{
@@ -2061,52 +2058,52 @@ namespace NAM {
 		}
 
 		size_t j = 0;
-		for (size_t i = 0; src[i] != '\0' && j < taille - 1; i++)
+		for (size_t i = 0; src[i] != '\0' && j < size - 1; i++)
 		{
 			const unsigned char ch = (unsigned char)src[i];
 
 			if (ch >= 128)
 				continue;
 
-			sortie[j++] = (char)toupper(ch);
+			out[j++] = (char)toupper(ch);
 		}
-		sortie[j] = '\0';
+		out[j] = '\0';
 
-		// couper l'extension d'un nom de fichier
-		char* point = strrchr(sortie, '.');
-		if (point != nullptr && point != sortie)
+		// cut the extension off a file name
+		char* point = strrchr(out, '.');
+		if (point != nullptr && point != out)
 			*point = '\0';
 	}
 
-	void Plugin::ecrire_ecran(int fav, bool changement)
+	void Plugin::write_screen(int fav, bool changed)
 	{
 		if (hmi == nullptr)
 			return;
 
-		char nom[MAX_FAV_NAME];
-		nom_favori(fav, nom, sizeof(nom));
+		char name[MAX_FAV_NAME];
+		fav_display_name(fav, name, sizeof(name));
 
-		if (nom[0] == '\0')
-			memcpy(nom, "AUCUN", 6);
+		if (name[0] == '\0')
+			memcpy(name, "NONE", 5);
 
-		// libelle du footswitch : sept caracteres utiles
-		char courtLabel[8];
-		size_t n = strnlen(nom, 7);
-		memcpy(courtLabel, nom, n);
-		courtLabel[n] = '\0';
+		// footswitch label: seven usable characters
+		char shortLabel[8];
+		size_t n = strnlen(name, 7);
+		memcpy(shortLabel, name, n);
+		shortLabel[n] = '\0';
 
 		const int idxNext = IDX_FAV_BROWSE;
 
-		if (changement && fav >= 1)
+		if (changed && fav >= 1)
 		{
-			// plein ecran d'abord : il pose le titre en libelle et gele le reste
-			char titre[16];
-			snprintf(titre, sizeof(titre), "FAV %d", fav);
-			hmi_popup(idxNext, titre, nom);
+			// full screen first: it sets the title as a label and freezes the rest
+			char title[16];
+			snprintf(title, sizeof(title), "FAV %d", fav);
+			hmi_popup(idxNext, title, name);
 			return;
 		}
 
-		hmi_label(idxNext, courtLabel);
+		hmi_label(idxNext, shortLabel);
 
 		char val[8];
 		if (fav >= 1)
@@ -2116,8 +2113,8 @@ namespace NAM {
 
 		hmi_value(idxNext, val);
 
-		// Chaque switch de favori porte SON propre nom, pas « Fav 3 ».
-		// Les envois sont filtres par le cache : rien ne part si rien ne change.
+		// Every favorite switch carries ITS OWN name, not "Fav 3".
+		// The cache filters the sends: nothing goes out if nothing changes.
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
 			const int port = IDX_FAV_FIRST + i;
@@ -2125,15 +2122,15 @@ namespace NAM {
 			if (hmiAddr[port] == nullptr)
 				continue;
 
-			char nomI[MAX_FAV_NAME];
-			nom_favori(i + 1, nomI, sizeof(nomI));
+			char nameI[MAX_FAV_NAME];
+			fav_display_name(i + 1, nameI, sizeof(nameI));
 
-			char courtI[8];
-			size_t k = strnlen(nomI[0] != '\0' ? nomI : "VIDE", 7);
-			memcpy(courtI, nomI[0] != '\0' ? nomI : "VIDE", k);
-			courtI[k] = '\0';
+			char shortI[8];
+			size_t k = strnlen(nameI[0] != '\0' ? nameI : "VIDE", 7);
+			memcpy(shortI, nameI[0] != '\0' ? nameI : "VIDE", k);
+			shortI[k] = '\0';
 
-			hmi_label(port, courtI);
+			hmi_label(port, shortI);
 			hmi_value(port, (fav == i + 1) ? "ACTIF" : "-");
 		}
 	}
@@ -2158,43 +2155,43 @@ namespace NAM {
 		lv2_atom_forge_pop(&atom_forge, &frame);
 	}
 
-	// Range les favoris dans l'etat : les chemins d'abord, un par ligne, puis
-	// les rangs choisis dans la liste des noms, separes par des virgules. Deux
-	// cles distinctes -- un etat ecrit par une version d'avant n'a pas la
-	// seconde, et ses favoris repartent simplement sur AUTO.
-	void Plugin::ranger_favoris(LV2_State_Store_Function store, LV2_State_Handle handle)
+	// Puts the favorites into the state: the paths first, one per line, then
+	// the ranks picked in the name list, comma separated. Two distinct keys --
+	// a state written by an earlier version has no second key, and its
+	// favorites simply start again on AUTO.
+	void Plugin::store_favorites(LV2_State_Store_Function store, LV2_State_Handle handle)
 	{
-		std::string chemins;
-		std::string noms;
+		std::string paths;
+		std::string names;
 
 		for (int i = 0; i < NUM_FAVS; i++)
 		{
-			chemins.append(favPaths[i], strnlen(favPaths[i], MAX_FILE_NAME));
-			chemins += '\n';
+			paths.append(favPaths[i], strnlen(favPaths[i], MAX_FILE_NAME));
+			paths += '\n';
 
 			if (i != 0)
-				noms += ',';
+				names += ',';
 
-			noms += std::to_string(favNameChoice[i].load(std::memory_order_acquire));
+			names += std::to_string(favNameChoice[i].load(std::memory_order_acquire));
 		}
 
-		store(handle, uris.favs_String, chemins.c_str(), chemins.size() + 1,
+		store(handle, uris.favs_String, paths.c_str(), paths.size() + 1,
 			uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-		store(handle, uris.favNames_String, noms.c_str(), noms.size() + 1,
+		store(handle, uris.favNames_String, names.c_str(), names.size() + 1,
 			uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 	}
 
-	// Repose dans les ports de controle les rangs repris de l'etat. Un plugin
-	// ne peut pas ecrire dans ses propres ports d'entree, mais l'extension kx
-	// permet de le DEMANDER a l'hote -- meme recette que pour les gains.
-	// Sans cela, la liste du panneau afficherait AUTO alors que l'ecran de la
-	// machine, lui, connait deja le bon nom.
-	void Plugin::remettre_noms()
+	// Puts the ranks taken from the state back into the control ports. A plugin
+	// cannot write to its own input ports, but the kx extension lets it ASK the
+	// host -- the same recipe as for the gains.
+	// Without this the panel's list would show AUTO while the machine's screen
+	// already knows the right name.
+	void Plugin::restore_name_ports()
 	{
 		if (portreq == nullptr || portreq->request_change == nullptr)
 		{
-			kxEtat = 0;	// l'hote ne fournit pas l'extension
+			kxState = 0;	// the host does not provide the extension
 			return;
 		}
 
@@ -2203,15 +2200,15 @@ namespace NAM {
 			if (ports.favNamePort[i] == nullptr)
 				continue;
 
-			const int rang = favNameChoice[i].load(std::memory_order_acquire);
+			const int rank = favNameChoice[i].load(std::memory_order_acquire);
 
-			if ((float)rang == *(ports.favNamePort[i]))
-				continue;	// l'hote a deja la bonne valeur
+			if ((float)rank == *(ports.favNamePort[i]))
+				continue;	// the host already has the right value
 
 			const uint32_t index = (uint32_t)(56 + i);	// ports fav_name_1..10
 
-			const int rep = portreq->request_change(portreq->handle, index, (float)rang);
-			kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
+			const int rep = portreq->request_change(portreq->handle, index, (float)rank);
+			kxState = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
 		}
 	}
 

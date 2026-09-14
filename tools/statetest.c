@@ -1,18 +1,18 @@
-/* Banc d'essai de la MEMOIRE DES NOMS.
+/* Test bench for the NAME MEMORY.
  *
- * Le nom d'un favori est un rang choisi dans une liste. Il doit survivre au
- * rechargement d'une pedalboard : le plugin le range dans son etat, le reprend,
- * puis DEMANDE a l'hote de le reposer dans le port de controle (extension kx).
- * Ce banc rejoue exactement cela, hors machine :
+ * A favorite's name is a rank picked from a list. It has to survive a
+ * pedalboard reload: the plugin puts it into its state, takes it back, then
+ * ASKS the host to put it back into the control port (the kx extension). This
+ * bench replays exactly that, off the machine:
  *
- *   1. on choisit un nom pour chaque favori, on fait tourner le plugin ;
- *   2. on lui demande de sauvegarder, on garde ce qu'il ecrit ;
- *   3. on jette l'instance, on en cree une neuve, on lui rend l'etat ;
- *   4. on la fait tourner, et les ports doivent revenir a ce qui a ete choisi.
+ *   1. pick a name for every favorite, run the plugin;
+ *   2. ask it to save, keep whatever it writes;
+ *   3. throw the instance away, make a fresh one, hand it the state back;
+ *   4. run it, and the ports must come back to what was picked.
  *
- *   aarch64-linux-gnu-gcc -O1 -o etattest outils/etattest.c \
+ *   aarch64-linux-gnu-gcc -O1 -o statetest outils/etattest.c \
  *       -I deps/lv2/include -I src -ldl
- *   qemu-aarch64-static -L /usr/aarch64-linux-gnu ./etattest build/src/neural_amp_modeler.so
+ *   qemu-aarch64-static -L /usr/aarch64-linux-gnu ./statetest build/src/neural_amp_modeler.so
  */
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -33,7 +33,7 @@
 
 #define N_PORTS 85
 #define N_SAMPLES 256
-#define IDX_FAV_NAME 56		/* fav_name_1, les dix se suivent */
+#define IDX_FAV_NAME 56		/* fav_name_1, the ten follow on */
 #define N_FAVS 10
 
 static char* uris[4096];
@@ -67,22 +67,22 @@ static LV2_Worker_Status schedule(LV2_Worker_Schedule_Handle h, uint32_t size, c
 	return LV2_WORKER_SUCCESS;
 }
 
-/* --- l'etat garde par le faux hote --- */
+/* --- the state kept by the fake host --- */
 #define MAX_ETAT 16
-static struct { uint32_t key, type; size_t size; void* val; } etat[MAX_ETAT];
-static int n_etat = 0;
+static struct { uint32_t key, type; size_t size; void* val; } state[MAX_ETAT];
+static int n_state = 0;
 
 static LV2_State_Status store_cb(LV2_State_Handle h, uint32_t key, const void* value,
 	size_t size, uint32_t type, uint32_t flags)
 {
 	(void)h; (void)flags;
-	if (n_etat >= MAX_ETAT) return LV2_STATE_ERR_UNKNOWN;
-	etat[n_etat].key = key;
-	etat[n_etat].type = type;
-	etat[n_etat].size = size;
-	etat[n_etat].val = malloc(size);
-	memcpy(etat[n_etat].val, value, size);
-	n_etat++;
+	if (n_state >= MAX_ETAT) return LV2_STATE_ERR_UNKNOWN;
+	state[n_state].key = key;
+	state[n_state].type = type;
+	state[n_state].size = size;
+	state[n_state].val = malloc(size);
+	memcpy(state[n_state].val, value, size);
+	n_state++;
 	return LV2_STATE_SUCCESS;
 }
 
@@ -90,22 +90,22 @@ static const void* retrieve_cb(LV2_State_Handle h, uint32_t key, size_t* size,
 	uint32_t* type, uint32_t* flags)
 {
 	(void)h;
-	for (int i = 0; i < n_etat; i++)
+	for (int i = 0; i < n_state; i++)
 	{
-		if (etat[i].key != key) continue;
-		if (size) *size = etat[i].size;
-		if (type) *type = etat[i].type;
+		if (state[i].key != key) continue;
+		if (size) *size = state[i].size;
+		if (type) *type = state[i].type;
 		if (flags) *flags = 0;
-		return etat[i].val;
+		return state[i].val;
 	}
 	if (size) *size = 0;
 	if (type) *type = 0;
 	return NULL;
 }
 
-/* --- extension kx : l'hote accepte et pose la valeur dans le port --- */
+/* --- kx extension: the host accepts and puts the value into the port --- */
 static float* ports_ctrl = NULL;
-static int kx_appels = 0;
+static int kx_calls = 0;
 
 static LV2_ControlInputPort_Change_Status kx_change(
 	LV2_ControlInputPort_Change_Request_Handle h, uint32_t index, float value)
@@ -113,7 +113,7 @@ static LV2_ControlInputPort_Change_Status kx_change(
 	(void)h;
 	if (index >= N_PORTS) return LV2_CONTROL_INPUT_PORT_CHANGE_ERR_INVALID_INDEX;
 	ports_ctrl[index] = value;
-	kx_appels++;
+	kx_calls++;
 	return LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS;
 }
 
@@ -123,7 +123,7 @@ static uint8_t atom_in[8192], atom_out[8192];
 
 static const LV2_Descriptor* d = NULL;
 
-static void brancher(void)
+static void connect_all(void)
 {
 	for (uint32_t p = 0; p < N_PORTS; p++)
 	{
@@ -135,9 +135,9 @@ static void brancher(void)
 	}
 }
 
-static void tourner(int fois)
+static void run_cycles(int times)
 {
-	for (int i = 0; i < fois; i++)
+	for (int i = 0; i < times; i++)
 	{
 		*(uint32_t*)atom_out = sizeof(atom_out) - 8;
 		d->run(instance, N_SAMPLES);
@@ -149,13 +149,13 @@ int main(int argc, char** argv)
 	if (argc < 2) { fprintf(stderr, "usage: %s plugin.so\n", argv[0]); return 2; }
 
 	void* lib = dlopen(argv[1], RTLD_NOW | RTLD_LOCAL);
-	if (!lib) { fprintf(stderr, "dlopen : %s\n", dlerror()); return 1; }
+	if (!lib) { fprintf(stderr, "dlopen: %s\n", dlerror()); return 1; }
 
 	LV2_Descriptor_Function df = (LV2_Descriptor_Function)dlsym(lib, "lv2_descriptor");
-	if (!df) { fprintf(stderr, "lv2_descriptor introuvable\n"); return 1; }
+	if (!df) { fprintf(stderr, "lv2_descriptor not found\n"); return 1; }
 
 	d = df(0);
-	if (!d) { fprintf(stderr, "descripteur nul\n"); return 1; }
+	if (!d) { fprintf(stderr, "null descriptor\n"); return 1; }
 
 	LV2_URID_Map map = { NULL, map_uri };
 	LV2_Feature f_map = { LV2_URID__map, &map };
@@ -182,101 +182,101 @@ int main(int argc, char** argv)
 	memset(atom_in, 0, sizeof(atom_in));
 	memset(atom_out, 0, sizeof(atom_out));
 
-	/* ---- 1. une premiere instance, on choisit les noms ---------------- */
+	/* ---- 1. a first instance, pick the names ------------------------- */
 	instance = d->instantiate(d, 48000.0, "/tmp/", features);
-	if (!instance) { fprintf(stderr, "instantiate a renvoye NULL\n"); return 1; }
+	if (!instance) { fprintf(stderr, "instantiate returned NULL\n"); return 1; }
 
 	worker_iface = (const LV2_Worker_Interface*)d->extension_data(LV2_WORKER__interface);
 	const LV2_State_Interface* st =
 		(const LV2_State_Interface*)d->extension_data(LV2_STATE__interface);
 
-	if (!st) { fprintf(stderr, "pas d'interface state\n"); return 1; }
+	if (!st) { fprintf(stderr, "no state interface\n"); return 1; }
 
-	brancher();
+	connect_all();
 	if (d->activate) d->activate(instance);
 
-	int choisis[N_FAVS];
+	int picked[N_FAVS];
 
 	for (int i = 0; i < N_FAVS; i++)
 	{
-		choisis[i] = (i + 1) * 7;	/* 7, 14, 21 ... des rangs quelconques */
-		ctrl[IDX_FAV_NAME + i] = (float)choisis[i];
+		picked[i] = (i + 1) * 7;	/* 7, 14, 21 ... arbitrary ranks */
+		ctrl[IDX_FAV_NAME + i] = (float)picked[i];
 	}
 
-	tourner(5);
+	run_cycles(5);
 
-	/* ---- 2. sauvegarde ------------------------------------------------ */
+	/* ---- 2. save ------------------------------------------------------ */
 	st->save(instance, store_cb, NULL, 0, NULL);
 
-	printf("etat ecrit : %d cles\n", n_etat);
+	printf("state written: %d keys\n", n_state);
 
-	int vu_noms = 0;
+	int saw_names = 0;
 
-	for (int i = 0; i < n_etat; i++)
+	for (int i = 0; i < n_state; i++)
 	{
-		const char* nom = uris[etat[i].key - 1];
-		printf("  %s = \"%s\"\n", nom, (const char*)etat[i].val);
+		const char* name = uris[state[i].key - 1];
+		printf("  %s = \"%s\"\n", name, (const char*)state[i].val);
 
-		if (strstr(nom, "#favnames") != NULL)
+		if (strstr(name, "#favnames") != NULL)
 		{
-			vu_noms = 1;
+			saw_names = 1;
 
-			char attendu[256];
+			char expected[256];
 			int n = 0;
 			for (int k = 0; k < N_FAVS; k++)
-				n += snprintf(attendu + n, sizeof(attendu) - n, k ? ",%d" : "%d", choisis[k]);
+				n += snprintf(expected + n, sizeof(expected) - n, k ? ",%d" : "%d", picked[k]);
 
-			if (strcmp((const char*)etat[i].val, attendu) != 0)
+			if (strcmp((const char*)state[i].val, expected) != 0)
 			{
-				fprintf(stderr, "FAUTE : etat \"%s\", attendu \"%s\"\n",
-					(const char*)etat[i].val, attendu);
+				fprintf(stderr, "FAULT: state \"%s\", expected \"%s\"\n",
+					(const char*)state[i].val, expected);
 				return 1;
 			}
 		}
 	}
 
-	if (!vu_noms) { fprintf(stderr, "FAUTE : aucune cle #favnames dans l'etat\n"); return 1; }
+	if (!saw_names) { fprintf(stderr, "FAULT: no #favnames key in the state\n"); return 1; }
 
 	if (d->deactivate) d->deactivate(instance);
 	d->cleanup(instance);
 
-	/* ---- 3. une instance NEUVE, ports a zero, on lui rend l'etat ------ */
+	/* ---- 3. a FRESH instance, ports at zero, hand the state back ----- */
 	memset(ctrl, 0, sizeof(ctrl));
-	kx_appels = 0;
+	kx_calls = 0;
 
 	instance = d->instantiate(d, 48000.0, "/tmp/", features);
-	if (!instance) { fprintf(stderr, "seconde instantiate nulle\n"); return 1; }
+	if (!instance) { fprintf(stderr, "second instantiate returned NULL\n"); return 1; }
 
 	worker_iface = (const LV2_Worker_Interface*)d->extension_data(LV2_WORKER__interface);
 
-	brancher();
+	connect_all();
 	if (d->activate) d->activate(instance);
 
 	st->restore(instance, retrieve_cb, NULL, 0, NULL);
 
-	/* ---- 4. les ports doivent revenir a ce qui a ete choisi ----------- */
-	tourner(5);
+	/* ---- 4. the ports must come back to what was picked -------------- */
+	run_cycles(5);
 
-	printf("demandes kx : %d\n", kx_appels);
+	printf("kx requests: %d\n", kx_calls);
 
-	int fautes = 0;
+	int faults = 0;
 
 	for (int i = 0; i < N_FAVS; i++)
 	{
-		const int lu = (int)ctrl[IDX_FAV_NAME + i];
+		const int read = (int)ctrl[IDX_FAV_NAME + i];
 
-		printf("  fav %-2d attendu %-3d lu %-3d %s\n", i + 1, choisis[i], lu,
-			lu == choisis[i] ? "" : "<-- FAUTE");
+		printf("  fav %-2d expected %-3d read %-3d %s\n", i + 1, picked[i], read,
+			read == picked[i] ? "" : "<-- FAULT");
 
-		if (lu != choisis[i]) fautes++;
+		if (read != picked[i]) faults++;
 	}
 
 	if (d->deactivate) d->deactivate(instance);
 	d->cleanup(instance);
 	dlclose(lib);
 
-	if (fautes) { fprintf(stderr, "%d nom(s) perdu(s) au rechargement\n", fautes); return 1; }
+	if (faults) { fprintf(stderr, "%d name(s) lost on reload\n", faults); return 1; }
 
-	printf("LES NOMS SURVIVENT AU RECHARGEMENT\n");
+	printf("THE NAMES SURVIVE A RELOAD\n");
 	return 0;
 }

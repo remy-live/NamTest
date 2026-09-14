@@ -1,26 +1,25 @@
-/* glibc227_compat.c — ramène le binaire au niveau de la glibc du MOD Dwarf (2.27).
+/* glibc227_compat.c -- brings the binary down to the MOD Dwarf's glibc (2.27).
  *
- * DANGER MESURÉ : ces fonctions portent les noms de fonctions de la glibc.
- * Exportées, elles supplantent celles du processus HÔTE — mod-jackd, lilv, les
- * autres plugins — qui se retrouvent à utiliser MES implantations, écrites pour
- * mon seul usage. D'où le plantage du serveur audio à l'ajout de l'effet.
- * Elles sont donc TOUTES cachées : utilisables dans ce binaire, invisibles
- * au dehors.
+ * A DANGER MEASURED THE HARD WAY: these functions carry glibc function names.
+ * Exported, they supersede the HOST process's own -- mod-jackd, lilv, the other
+ * plugins -- which then end up running MY implementations, written for my use
+ * alone. Hence the audio server dying when the effect was added. So every one
+ * of them is hidden: usable inside this binary, invisible outside it.
  */
 #define COMPAT_LOCAL __attribute__((visibility("hidden")))
 
-/* (en-tête d'origine)
- * glibc227_compat.c — ramène le binaire au niveau de la glibc du MOD Dwarf (2.27).
- * Chaque fonction ici REMPLACE un symbole trop récent : le linker resout la
- * reference sur notre definition locale, donc plus aucune entree UND versionnee.
- * Ne JAMAIS appeler ici la fonction qu'on definit (recursion infinie) : on passe
- * soit par un appel systeme direct, soit par un alias asm vers le vrai symbole.
+/* (original header)
+ * Every function here REPLACES a symbol that is too recent: the linker resolves
+ * the reference against our local definition, so no versioned UND entry is
+ * left. NEVER call here the function being defined (endless recursion): go
+ * either through a direct system call, or through an asm alias to the real
+ * symbol.
  */
 #define _GNU_SOURCE
 #define _LARGEFILE64_SOURCE
 
 __attribute__((used)) static const char build_tag[] =
-	"NAMTEST_BUILD66_AARCH64_20260914";
+	"NAMTEST_BUILD67_AARCH64_20260914";
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -31,10 +30,10 @@ __attribute__((used)) static const char build_tag[] =
 #include <errno.h>
 #include <pthread.h>
 
-/* --- famille stat (GLIBC_2.33) -------------------------------------------
- * Sur aarch64 la struct stat de la glibc est celle du noyau, et le seul appel
- * systeme disponible est newfstatat. On court-circuite donc entierement la
- * glibc, ce qui evite le debat sur la version de __xstat.
+/* --- the stat family (GLIBC_2.33) ----------------------------------------
+ * On aarch64 glibc's struct stat is the kernel's, and the only system call
+ * available is newfstatat. glibc is therefore bypassed entirely, which settles
+ * the argument about which version of __xstat to use.
  */
 COMPAT_LOCAL int stat(const char *path, struct stat *buf)
 {
@@ -67,14 +66,14 @@ COMPAT_LOCAL int lstat64(const char *path, struct stat64 *buf)
 }
 
 /* --- __libc_single_threaded (GLIBC_2.32) ---------------------------------
- * Donnee, pas fonction. 0 = « suppose plusieurs fils » : c'est le choix
- * conservateur, la libstdc++ prend alors ses chemins verrouilles.
+ * Data, not a function. 0 = "assume several threads": the conservative choice,
+ * which makes libstdc++ take its locked paths.
  */
 COMPAT_LOCAL char __libc_single_threaded = 0;
 
 /* --- pthread_once (GLIBC_2.34) -------------------------------------------
- * En 2.27 il vit dans libpthread, pas dans libc, et on ne peut pas s'y lier
- * proprement depuis une chaine moderne. Reimplantation par atomiques.
+ * In 2.27 it lives in libpthread, not in libc, and a modern toolchain cannot
+ * link against it cleanly. Reimplemented with atomics.
  */
 COMPAT_LOCAL int pthread_once(int *control, void (*init_routine)(void))
 {
@@ -93,13 +92,13 @@ COMPAT_LOCAL int pthread_once(int *control, void (*init_routine)(void))
 }
 
 
-/* --- cles locales au fil (GLIBC_2.34) ------------------------------------
- * La libstdc++ statique reference __pthread_key_create pour savoir si le
- * programme est multi-fils. En 2.27 ces fonctions vivent dans libpthread, pas
- * dans libc, et une chaine moderne ne sait plus s'y lier : on les reimplante
- * entierement, ce qui evite TOUTE reference versionnee (aucune retouche de
- * l'ELF apres coup -- une tentative de ce genre a fait planter le chargeur).
- * Limite assumee : les destructeurs ne sont pas appeles a la fin d'un fil.
+/* --- thread-local keys (GLIBC_2.34) --------------------------------------
+ * Static libstdc++ references __pthread_key_create to find out whether the
+ * program is multi-threaded. In 2.27 those functions live in libpthread, not
+ * in libc, and a modern toolchain can no longer link against them: they are
+ * reimplemented entirely, which avoids EVERY versioned reference (no patching
+ * of the ELF afterwards -- an attempt of that kind crashed the loader).
+ * Accepted limit: destructors are not called when a thread ends.
  */
 #define COMPAT_MAX_KEYS 64
 static void (*compat_key_dtor[COMPAT_MAX_KEYS])(void *);
@@ -153,9 +152,9 @@ COMPAT_LOCAL int pthread_setspecific(pthread_key_t key, const void *value)
 }
 
 /* --- _dl_find_object (GLIBC_2.35) ----------------------------------------
- * Utilise par le derouleur d'exceptions de libgcc comme RACCOURCI. Renvoyer
- * -1 (« pas trouve ») le fait retomber sur dl_iterate_phdr, present depuis
- * toujours. Les exceptions continuent donc de fonctionner, un peu plus lentement.
+ * Used by libgcc's exception unwinder as a SHORTCUT. Returning -1 ("not
+ * found") makes it fall back on dl_iterate_phdr, which has always been there.
+ * Exceptions therefore keep working, a little more slowly.
  */
 COMPAT_LOCAL int _dl_find_object(void *address, void *result)
 {
@@ -195,9 +194,9 @@ COMPAT_LOCAL void arc4random_buf(void *buf, size_t n)
 
 
 /* --- getentropy / getrandom ---------------------------------------------
- * La version existe chez MOD mais le symbole n'est pas exporte par leur libc.
- * On passe par l'appel systeme getrandom (noyau >= 3.17 ; le Dwarf est en 6.1),
- * avec repli sur /dev/urandom.
+ * The version exists on MOD but the symbol is not exported by their libc. We
+ * go through the getrandom system call (kernel >= 3.17; the Dwarf runs 6.1),
+ * falling back on /dev/urandom.
  */
 COMPAT_LOCAL int getentropy(void *buf, size_t len)
 {
@@ -238,10 +237,10 @@ COMPAT_LOCAL ssize_t getrandom(void *buf, size_t len, unsigned int flags)
 	return syscall(SYS_getrandom, buf, len, flags);
 }
 
-/* --- famille __isoc23_strtol (GLIBC_2.38) --------------------------------
- * Les en-tetes recentes renomment strtol en __isoc23_strtol. On redonne ce nom
- * au vrai strtol, atteint par un alias asm pour eviter que la macro ne nous
- * renvoie sur nous-memes.
+/* --- the __isoc23_strtol family (GLIBC_2.38) -----------------------------
+ * Recent headers rename strtol to __isoc23_strtol. That name is given back to
+ * the real strtol, reached through an asm alias so the macro does not send us
+ * back to ourselves.
  */
 extern long real_strtol(const char *, char **, int) __asm__("strtol");
 extern unsigned long real_strtoul(const char *, char **, int) __asm__("strtoul");
@@ -253,9 +252,9 @@ COMPAT_LOCAL unsigned long __isoc23_strtoul(const char *n, char **e, int b) { re
 COMPAT_LOCAL long long __isoc23_strtoll(const char *n, char **e, int b) { return real_strtoll(n, e, b); }
 COMPAT_LOCAL unsigned long long __isoc23_strtoull(const char *n, char **e, int b) { return real_strtoull(n, e, b); }
 
-/* La trace doit lire la VRAIE marque : la ligne "build" du fichier d'etat etait
-   un texte fige, qui n'a pas suivi depuis plusieurs versions et faisait croire
-   qu'une ancienne version tournait. */
+/* The trace has to read the REAL mark: the "build" line of the state file used
+   to be frozen text, which had not followed for several versions and made it
+   look as though an old build was running. */
 const char* nam_build_tag(void)
 {
 	return build_tag;

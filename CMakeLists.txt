@@ -24,16 +24,16 @@ set(NAM_LV2_ID http://remy.local/nam-test)
 add_subdirectory(src)
 
 
-# Le bundle s'appelle nam_test.lv2, PAS neural_amp_modeler.lv2.
+# The bundle is called nam_test.lv2, NOT neural_amp_modeler.lv2.
 #
-# Deux raisons, et la seconde coute cher :
-#   - c'est le nom deja pose sur la machine, celui que la procedure
-#     d'installation efface et remplace ;
-#   - le NAM du magasin s'installe sous neural_amp_modeler.lv2. Deux dossiers
-#     du meme nom, ou deux bundles qui declarent le meme greffon, et mod-ui ne
-#     sait plus lequel prendre.
-# Le fichier .so et les .ttl gardent leur nom DANS le bundle : manifest.ttl les
-# designe par un chemin relatif, et c'est ainsi depuis le debut.
+# Two reasons, and the second one is expensive:
+#   - that is the name already installed on the machine, the one the install
+#     procedure wipes and replaces;
+#   - the store's NAM installs as neural_amp_modeler.lv2. Two folders with the
+#     same name, or two bundles declaring the same plugin, and mod-ui no longer
+#     knows which to take.
+# The .so and the .ttl files keep their names INSIDE the bundle: manifest.ttl
+# points at them with a relative path, and that is how it has always been.
 set(NAM_BUNDLE nam_test.lv2)
 
 add_custom_target(copy_binaries ALL

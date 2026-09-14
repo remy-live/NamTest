@@ -1,4 +1,4 @@
-# rien de ce qui est engendré ne se commet
+# nothing that is generated gets committed
 build/
 __pycache__/
 *.pyc

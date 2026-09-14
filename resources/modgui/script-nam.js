@@ -1,33 +1,33 @@
 function(event, funcs) {
-    // NAM TEST — la correction trouvee par l'auto-gain, favori par favori.
+    // NAM TEST — the correction the auto-gain found, favorite by favorite.
     //
-    // Un port de SORTIE ne se lit pas dans un gabarit : le plugin fait donc
-    // tourner un favori par seconde. `auto_db_slot` porte la correction,
-    // `db_slot` le numero du favori qu'elle concerne — et il arrive un dixieme
-    // de seconde APRES elle, ce qui rend l'ordre sur : c'est sur lui qu'on
-    // dessine.
+    // A template cannot read an OUTPUT port, so the plugin rotates one
+    // favorite per second. `auto_db_slot` carries the correction, `db_slot`
+    // the number of the favorite it belongs to — and that number arrives a
+    // tenth of a second AFTER it, which makes the order certain: the drawing
+    // happens on it.
     //
-    // Les NOMS ne passent plus par ici. Ils sont choisis dans une liste
-    // deroulante, c'est-a-dire dans un port de controle dont mod-ui s'occupe
-    // seul et que l'hote range avec la pedalboard. La saisie libre a ete
-    // retiree : sur l'image Starless, une chaine ne redescend pas jusqu'au
-    // plugin, et il fallait la remonter caractere par caractere.
+    // NAMES no longer travel through here. They are picked from a drop-down,
+    // that is to say a control port, which mod-ui handles on its own and the
+    // host saves with the pedalboard. Free typing was removed: on the Starless
+    // image a string does not come back down to the plugin, so the text had to
+    // be sent up one character at a time.
     //
-    // Les cellules sont cherchees dans TOUTE la page, et non dans event.icon :
-    // le panneau de reglages n'est pas un descendant de l'icone, et c'est la
-    // qu'elles vivent.
+    // The cells are looked up across the WHOLE page, not inside event.icon:
+    // the settings panel is not a descendant of the icon, and that is where
+    // they live.
 
-    var etat = window.__namMesure;
+    var state = window.__namMeasured;
 
-    if (!etat) {
-        etat = { db: 0 };
-        window.__namMesure = etat;
+    if (!state) {
+        state = { db: 0 };
+        window.__namMeasured = state;
     }
 
     if (event.type !== 'change') { return; }
 
     if (event.symbol === 'auto_db_slot') {
-        etat.db = event.value;
+        state.db = event.value;
         return;
     }
 
@@ -37,12 +37,12 @@ function(event, funcs) {
 
     if (!slot) { return; }
 
-    var etiq = jQuery('.nam-auto[data-slot="' + slot + '"]');
+    var cell = jQuery('.nam-auto[data-slot="' + slot + '"]');
 
-    if (!etiq.length) { return; }
+    if (!cell.length) { return; }
 
-    var db = etat.db || 0;
+    var db = state.db || 0;
 
-    etiq.text((db >= 0 ? '+' : '') + db.toFixed(2) + ' dB');
-    etiq.toggleClass('nam-auto-vif', Math.abs(db) > 0.01);
+    cell.text((db >= 0 ? '+' : '') + db.toFixed(2) + ' dB');
+    cell.toggleClass('nam-auto-live', Math.abs(db) > 0.01);
 }

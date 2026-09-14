@@ -1,8 +1,8 @@
-/* N'exporter QUE le point d'entree LV2.
+/* Export ONLY the LV2 entry point.
  *
- * mod-host charge tous les plugins dans un seul processus. Ce fork et le NAM du
- * magasin partagent le meme code, donc les memes noms de symboles C++ : sans ce
- * script, le premier charge l'emporte pour les deux et le serveur audio tombe.
+ * mod-host loads every plugin into a single process. This fork and the store's
+ * NAM share the same code, so the same C++ symbol names: without this script
+ * the first one loaded wins for both, and the audio server goes down.
  */
 {
     global:
