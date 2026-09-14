@@ -253,14 +253,16 @@
 }
 
 
-/* champs de saisie des noms, dans le panneau */
-.x-set{{{cns}}} .nam-typed {
-    flex:0 0 190px;
+/* Correction mesuree par l'auto-gain : une cellule etroite posee a cote de la
+   liste des noms. Le champ de saisie libre qui l'accompagnait a ete retire --
+   les noms se choisissent dans la liste. */
+.x-set{{{cns}}} .nam-mesure {
+    flex:0 0 110px;
     height:126px;
     padding-top:8px;
     box-sizing:border-box;
 }
-.x-set{{{cns}}} .nam-typed-title {
+.x-set{{{cns}}} .nam-mesure-title {
     display:block;
     font-size:10px;
     color:#9a7fb8;
@@ -268,24 +270,6 @@
     text-transform:uppercase;
     margin-bottom:6px;
 }
-.x-set{{{cns}}} .nam-typed-input {
-    width:170px;
-    height:26px;
-    background:#141414;
-    border:1px solid #4a3a5a;
-    border-radius:4px;
-    color:#fff;
-    font-family:"Questrial", sans-serif;
-    font-size:13px;
-    padding:0 8px;
-    box-sizing:border-box;
-}
-
-
-
-
-
-/* correction mesuree par l'auto-gain, affichee a cote du champ de nom */
 .x-set{{{cns}}} .nam-auto {
     display:block;
     margin-top:6px;

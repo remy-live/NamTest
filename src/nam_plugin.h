@@ -46,7 +46,6 @@ namespace NAM {
 		kWorkTypeFavLoad,	// charger le favori d'un emplacement
 		kWorkTypeFavStore,	// ranger le modele courant dans un emplacement
 		kWorkTypeFavSetPath,	// poser le chemin d'un favori (venu de l'interface)
-		kWorkTypeFavSetName,	// poser le nom libre d'un favori
 		kWorkTypeTrace,		// ecrire l'etat dans un fichier, pour diagnostic
 		kWorkTypeAutoGain	// mesurer le niveau de chaque favori, hors temps reel
 	};
@@ -56,10 +55,12 @@ namespace NAM {
 	// un fichier, seul canal qui ne depende ni du navigateur ni du journal.
 	static constexpr const char* TRACE_PATH = "/tmp/nam_test_state.txt";
 
+	// taille du tampon d'un nom AFFICHE : celui de la liste, ou le nom du
+	// fichier ramene en capitales
 	static constexpr unsigned int MAX_FAV_NAME = 64;
 
 	static constexpr int NUM_FAVS = 10;
-	static constexpr int NUM_PORTS_TOTAL = 95;
+	static constexpr int NUM_PORTS_TOTAL = 85;
 	// duree au-dela de laquelle un appui devient long, en millisecondes
 	// Indices codes en dur, verifies par script contre le descripteur.
 	// Interrupteur d'isolement : a true, le plugin n'ecrit plus rien sur l'ecran
@@ -93,12 +94,6 @@ namespace NAM {
 		LV2WorkType type;
 		int32_t slot;
 		char path[MAX_FILE_NAME];
-	};
-
-	struct LV2FavNameMsg {
-		LV2WorkType type;
-		int32_t slot;
-		char name[MAX_FAV_NAME];
 	};
 
 	struct LV2FavMsg {
@@ -168,15 +163,11 @@ namespace NAM {
 			float* auto_state;		// 77 sortie
 			float* auto_offset;		// 78 sortie
 			float* cv_select;		// 79 entree CV, 0 a 10 V
-			float* web_slot;		// 80 favori vise par la saisie
-			float* web_char;		// 81 code du caractere
-			float* web_strobe;		// 82 tout changement fait lire un caractere
-			float* name_slot;		// 83 sortie : de qui n1..n7 portent le nom
-			float* nameChar[7];		// 84..90 sorties : les sept caracteres
-			float* auto_db_slot;		// 91 sortie : correction de ce favori
-			float* auto_apply;		// 92 ecrire les corrections dans les gains
-			float* auto_undo;		// 93 remettre les gains d'avant
-			float* kx_state;		// 94 sortie : 0 absent, 1 present, 2 accepte, -1 refuse
+			float* db_slot;			// 80 sortie : favori decrit par auto_db_slot
+			float* auto_db_slot;		// 81 sortie : correction de ce favori
+			float* auto_apply;		// 82 ecrire les corrections dans les gains
+			float* auto_undo;		// 83 remettre les gains d'avant
+			float* kx_state;		// 84 sortie : 0 absent, 1 present, 2 accepte, -1 refuse
 		};
 
 		Ports ports = {};
@@ -216,11 +207,14 @@ namespace NAM {
 
 		// Favoris : chemins detenus par le thread du WORKER uniquement
 		char favPaths[NUM_FAVS][MAX_FILE_NAME] = {};
-		// noms tapes dans l'interface, recus caractere par caractere
-		char favNames[NUM_FAVS][MAX_FAV_NAME] = {};
-		std::atomic<unsigned> favNameDirty{0};
-		std::atomic<int> putVus{0};	// compteurs de diagnostic, lus dans la trace
-		std::atomic<int> nameSetVus{0};
+		// Nom de chaque favori : le RANG choisi dans FAV_NAME_TABLE, 0 = AUTO.
+		// C'est la SEULE source de verite du nom. Le port de controle la met a
+		// jour des que l'utilisateur touche la liste, l'etat la rend au
+		// rechargement -- meme si l'hote ne repose pas la valeur du port.
+		std::atomic<int> favNameChoice[NUM_FAVS];
+		// un etat restaure attend d'etre repose dans les ports de controle
+		std::atomic<bool> nomsARemettre{false};
+		std::atomic<int> putVus{0};	// compteur de diagnostic, lu dans la trace
 		std::atomic<unsigned> favDirty{0};	// bits des favoris a annoncer a l'interface
 		// rang de chaque favori dans la liste scannee, -1 si vide ou introuvable.
 		// Publie par des ports de SORTIE : c'est ainsi que la pedale retrouve le
@@ -268,8 +262,8 @@ namespace NAM {
 			LV2_URID model_Path;
 			LV2_URID atom_String;
 			LV2_URID favs_String;
+			LV2_URID favNames_String;
 			LV2_URID fav_Path[NUM_FAVS];
-			LV2_URID fav_Name[NUM_FAVS];
 		};
 
 		URIs uris = {};
@@ -302,16 +296,14 @@ namespace NAM {
 		bool favBrowseSeen = false;
 		uint32_t favBrowseHeld = 0;	// duree de l'etat haut, en echantillons
 		float prevFavName[NUM_FAVS] = {};
+		// Premier passage : la valeur DEJA posee par l'hote l'emporte sur celle
+		// qui vient de l'etat ; ensuite seuls les changements comptent.
+		bool favNameSeen[NUM_FAVS] = {};
 		float prevFavStore[NUM_FAVS] = {};
 		float prevAutoGain = 0;
-		float prevStrobe = 0;
-		bool strobeSeen = false;
-		float prevWebChar = 0;
-		bool webCharSeen = false;
 		bool ecranForce = false;
 		uint32_t rotationCompteur = 0;	// cadence du canal de retour
 		int rotationSlot = 0;	// redessiner sans declencher le plein ecran
-		uint64_t vieEchantillons = 0;	// age du plugin, pour ignorer la restauration
 		int cvBande = -1;	// bande CV en cours, pour ne charger qu'au changement
 		bool autoGainSeen = false;
 
@@ -331,7 +323,6 @@ namespace NAM {
 		std::atomic<bool> appliquerDemande{false};
 		std::atomic<bool> annulerDemande{false};
 		int kxEtat = 0;
-		int webVus = 0;		// temoin : ce que l'hote a repondu a la derniere demande
 		float prevAutoApply = 0;
 		float prevAutoUndo = 0;
 		bool autoApplySeen = false;
@@ -342,7 +333,10 @@ namespace NAM {
 
 		void appliquer_parametre(LV2_URID cible, const LV2_Atom* valeur);
 		void write_fav_path(int slot);
-		void write_fav_name(int slot);
+		// range chemins et rangs choisis dans l'etat du plugin
+		void ranger_favoris(LV2_State_Store_Function store, LV2_State_Handle handle);
+		// repose dans les ports de controle les choix venus de l'etat
+		void remettre_noms();
 
 		// --- ecran de la machine (HMI) --------------------------------
 		// Le host prete une « addressing » par port assigne a un actuateur.

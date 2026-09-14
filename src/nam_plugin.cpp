@@ -11,6 +11,7 @@
 #include <cstring>
 #include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cmath>
 #include <functional>
 
@@ -57,9 +58,11 @@ namespace NAM {
 		for (int i = 0; i < NUM_FAVS; i++)
 			favIndexes[i].store(-1, std::memory_order_release);
 
+		for (int i = 0; i < NUM_FAVS; i++)
+			favNameChoice[i].store(0, std::memory_order_release);
+
 		// tout annoncer au premier passage : sans cela l'hote ne sait rien des
-		// noms et ne les ecrira pas dans la pedalboard
-		favNameDirty.store((1u << NUM_FAVS) - 1, std::memory_order_release);
+		// chemins et ne les ecrira pas dans la pedalboard
 		favDirty.store((1u << NUM_FAVS) - 1, std::memory_order_release);
 
 		// seuil de l'appui long converti une fois pour toutes en echantillons
@@ -138,6 +141,9 @@ namespace NAM {
 		uris.model_Path = map->map(map->handle, MODEL_URI);
 		uris.atom_String = map->map(map->handle, LV2_ATOM__String);
 		uris.favs_String = map->map(map->handle, PlUGIN_URI "#favorites");
+		// Rang choisi dans la liste pour chaque favori. Cle SEPAREE des chemins :
+		// un etat ancien n'en a pas, et ce qu'on y lit reste clair a l'oeil nu.
+		uris.favNames_String = map->map(map->handle, PlUGIN_URI "#favnames");
 
 		{
 			// PIEGE PAYE CHER : cette table etait ecrite a la main avec HUIT
@@ -161,7 +167,6 @@ namespace NAM {
 				// garde-fou : ne jamais passer un pointeur nul a la table des URI
 				uris.fav_Path[i] = (favUris[i] != nullptr)
 					? map->map(map->handle, favUris[i]) : 0;
-				uris.fav_Name[i] = 0;	// les noms libres ont ete retires
 			}
 		}
 
@@ -392,7 +397,6 @@ namespace NAM {
 					fprintf(f, "  AUCUN -- refaire l'assignation apres installation\n");
 
 				fprintf(f, "\npatch:Put recus       %d\n", nam->putVus.load(std::memory_order_acquire));
-				fprintf(f, "\nchangements vus sur web_char : %d\n", nam->webVus);
 				fprintf(f, "\nkx (ecriture des boutons) : %d  (0 absent, 1 present, 2 accepte, -1 refuse)\n",
 					nam->kxEtat);
 				fprintf(f, "\nauto-gain  etat=%d (-1 echec, 0 jamais lance, 1 en cours, 2 fait)\n",
@@ -413,7 +417,13 @@ namespace NAM {
 				{
 					char n[MAX_FAV_NAME];
 					nam->nom_favori(i + 1, n, sizeof(n));
-					fprintf(f, "fav %-2d nom=\"%s\" tape=\"%s\"\n", i + 1, n, nam->favNames[i]);
+
+					const int choix =
+						nam->favNameChoice[i].load(std::memory_order_acquire);
+
+					fprintf(f, "fav %-2d nom=\"%s\" liste=%d \"%s\"\n", i + 1, n, choix,
+						(choix > 0 && choix < FAV_NAME_COUNT)
+							? FAV_NAME_TABLE[choix] : "AUTO");
 				}
 
 				fclose(f);
@@ -495,23 +505,6 @@ namespace NAM {
 					}
 				}
 				nam->favIndexes[msg->slot].store(rang, std::memory_order_release);
-
-				return LV2_WORKER_SUCCESS;
-			}
-
-			case kWorkTypeFavSetName:
-			{
-				auto msg = static_cast<const LV2FavNameMsg*>(data);
-				auto nam = static_cast<NAM::Plugin*>(instance);
-
-				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
-					return LV2_WORKER_SUCCESS;
-
-				memcpy(nam->favNames[msg->slot], msg->name, MAX_FAV_NAME);
-				nam->favNames[msg->slot][MAX_FAV_NAME - 1] = '\0';
-
-				// forcer la reecriture de l'ecran avec le nouveau nom
-				nam->ecranFav.store(-1, std::memory_order_release);
 
 				return LV2_WORKER_SUCCESS;
 			}
@@ -917,17 +910,9 @@ namespace NAM {
 					write_fav_path(i);
 			}
 
-			unsigned nbits = favNameDirty.exchange(0, std::memory_order_acquire);
-
-			for (int i = 0; i < NUM_FAVS && nbits != 0; i++)
+			if (bits != 0)
 			{
-				if (nbits & (1u << i))
-					write_fav_name(i);
-			}
-
-			if (bits != 0 || nbits != 0)
-			{
-				// un nom ou un chemin a change : vider le cache d'affichage,
+				// un chemin a change : vider le cache d'affichage,
 				// sinon l'ecran garderait l'ancien libelle indefiniment
 				for (int k = 0; k < NUM_PORTS_TOTAL; k++)
 				{
@@ -964,20 +949,46 @@ namespace NAM {
 		}
 
 		{
-			// un choix de nom qui change doit repeindre l'ecran
+			// ---- le nom d'un favori : un rang dans la liste ----------------
+			// L'hote garde ce rang avec la pedalboard comme n'importe quel
+			// reglage ; on en tient une copie, seule consultee par l'ecran, et
+			// tout changement repeint.
 			for (int i = 0; i < NUM_FAVS; i++)
 			{
-				const float v = ports.favNamePort[i] != nullptr ? *(ports.favNamePort[i]) : 0.0f;
+				if (ports.favNamePort[i] == nullptr)
+					continue;
 
-				if (v != prevFavName[i])
+				const float v = *(ports.favNamePort[i]);
+
+				if (!favNameSeen[i])
 				{
+					favNameSeen[i] = true;
 					prevFavName[i] = v;
-					hmiLbl[IDX_FAV_FIRST + i][0] = '\0';
-					hmiVal[IDX_FAV_FIRST + i][0] = '\0';
-					hmiLbl[IDX_FAV_BROWSE][0] = '\0';
-					ecranFav.store(-1, std::memory_order_release);
+
+					// Valeur deja posee par l'hote : elle l'emporte sur celle
+					// qui vient de l'etat. Zero veut dire AUTO, c'est-a-dire
+					// « rien de choisi » : le rang restaure survit alors.
+					if (v > 0.0f)
+						favNameChoice[i].store((int)v, std::memory_order_release);
+
+					continue;
 				}
+
+				if (v == prevFavName[i])
+					continue;
+
+				prevFavName[i] = v;
+				favNameChoice[i].store((int)v, std::memory_order_release);
+				hmiLbl[IDX_FAV_FIRST + i][0] = '\0';
+				hmiVal[IDX_FAV_FIRST + i][0] = '\0';
+				hmiLbl[IDX_FAV_BROWSE][0] = '\0';
+				ecranFav.store(-1, std::memory_order_release);
 			}
+
+			// un etat vient d'etre repris : reposer les rangs dans les ports,
+			// une seule fois, et APRES avoir regarde ce que l'hote y avait mis
+			if (nomsARemettre.exchange(false, std::memory_order_acquire))
+				remettre_noms();
 
 			const int fav = activeFav.load(std::memory_order_acquire);
 			const int aFaire = ecranFav.load(std::memory_order_acquire);
@@ -1081,67 +1092,6 @@ namespace NAM {
 			}
 		}
 
-		// ---- saisie d'un nom depuis l'interface web ---------------------
-		// UNE SEULE valeur porte tout : compteur x 4096 + emplacement x 256 +
-		// caractere. Deux ports separes ne marchaient que pour le favori 1 --
-		// rien ne garantit que l'emplacement arrive avant le declencheur, et
-		// s'il arrive apres, la frappe part vers l'emplacement precedent.
-		// Le compteur sert a distinguer deux frappes identiques de suite.
-		vieEchantillons += n_samples;
-
-		const float webNow = ports.web_char != nullptr ? *(ports.web_char) : 0.0f;
-
-		if (!webCharSeen)
-		{
-			webCharSeen = true;
-			prevWebChar = webNow;
-		}
-		else if (webNow != prevWebChar)
-		{
-			prevWebChar = webNow;
-			webVus++;	// compte TOUT changement, meme ignore : distingue
-					// "le navigateur n'ecrit pas" de "le plugin ignore"
-
-			// Au chargement d'une pedalboard l'hote REINSTALLE les valeurs
-			// sauvegardees : sans ce delai, la valeur restauree passerait pour
-			// une frappe et ajouterait un caractere parasite.
-			if (vieEchantillons > (uint64_t)(sampleRate * 2.0))
-			{
-				const int paquet = (int)(webNow + 0.5f);
-				const int slot = ((paquet >> 8) & 0x0F) - 1;
-				const int code = paquet & 0xFF;
-
-				if (slot >= 0 && slot < NUM_FAVS)
-				{
-					char* nom = favNames[slot];
-					const size_t len = strnlen(nom, MAX_FAV_NAME);
-
-					if (code == 1)
-					{
-						nom[0] = '\0';
-					}
-					else if (code == 8)
-					{
-						if (len > 0) nom[len - 1] = '\0';
-					}
-					else if (code >= 32 && code < 127 && len < MAX_FAV_NAME - 1)
-					{
-						nom[len] = (char)code;
-						nom[len + 1] = '\0';
-					}
-
-					// redessiner l'ecran SANS plein ecran : sinon chaque lettre
-					// tapee ouvrait un popup
-					for (int k = 0; k < NUM_PORTS_TOTAL; k++)
-					{
-						hmiLbl[k][0] = '\0';
-						hmiVal[k][0] = '\0';
-					}
-					ecranForce = true;
-				}
-			}
-		}
-
 		// ---- lancement de la mesure automatique -------------------------
 		const float autoNow = ports.auto_gain != nullptr ? *(ports.auto_gain) : 0.0f;
 
@@ -1206,11 +1156,11 @@ namespace NAM {
 			ecrire_gains(true);
 		}
 
-		// ---- canal de retour : le nom remonte vers l'interface ----------
-		// Sans lui, un nom tape est connu du plugin mais le champ du navigateur
-		// repart vide au rechargement. On fait tourner un favori par seconde :
-		// name_slot dit de qui il s'agit, n1..n7 portent ses caracteres, et
-		// auto_db_slot la correction mesuree pour le meme favori.
+		// ---- canal de retour : la correction mesuree, favori par favori --
+		// Le panneau n'a qu'une valeur a la fois : on fait tourner un favori
+		// par seconde. db_slot dit duquel il s'agit, auto_db_slot porte sa
+		// correction. Les noms ne passent plus par la : ils sont dans un port
+		// de controle, que l'interface lit directement.
 		rotationCompteur += n_samples;
 
 		if (rotationCompteur >= (uint32_t)sampleRate)
@@ -1219,26 +1169,21 @@ namespace NAM {
 			rotationSlot = (rotationSlot + 1) % NUM_FAVS;
 		}
 
-		if (ports.name_slot != nullptr)
-			*(ports.name_slot) = (float)(rotationSlot + 1);
-
-		{
-			char nom[MAX_FAV_NAME];
-			nom_favori(rotationSlot + 1, nom, sizeof(nom));
-
-			for (int k = 0; k < 7; k++)
-			{
-				if (ports.nameChar[k] == nullptr)
-					continue;
-
-				*(ports.nameChar[k]) = (k < (int)strnlen(nom, 7))
-					? (float)(unsigned char)nom[k] : 0.0f;
-			}
-		}
-
+		// La correction part EN PREMIER, le numero du favori un dixieme de
+		// seconde plus tard. C'est lui qui declenche l'affichage cote
+		// navigateur : il arrive donc toujours apres la valeur qu'il designe.
+		// Deux ports changes dans le meme cycle parviennent au navigateur dans
+		// un ordre que rien ne garantit, et la correction se posait alors dans
+		// la case du favori precedent. Ce numero change a chaque tour, meme
+		// quand deux favoris ont la meme correction : l'affichage se refait
+		// toujours.
 		if (ports.auto_db_slot != nullptr)
 			*(ports.auto_db_slot) =
 				autoGainMilli[rotationSlot].load(std::memory_order_acquire) / 1000.0f;
+
+		if (ports.db_slot != nullptr
+			&& rotationCompteur >= (uint32_t)(sampleRate * 0.1))
+			*(ports.db_slot) = (float)(rotationSlot + 1);
 
 		if (ports.kx_state != nullptr)
 			*(ports.kx_state) = (float)kxEtat;
@@ -1317,26 +1262,6 @@ namespace NAM {
 					                    uris.patch_property, &property,
 					                    uris.patch_value, &file_path,
 					                    0);
-
-					// un nom libre : meme message, mais valeur de type chaine
-					if (property && property->type == uris.atom_URID &&
-						file_path && file_path->type == uris.atom_String &&
-						file_path->size > 0 && file_path->size <= MAX_FAV_NAME)
-					{
-						const LV2_URID cible = ((const LV2_Atom_URID*)property)->body;
-
-						for (int i = 0; i < NUM_FAVS; i++)
-						{
-							if (cible != uris.fav_Name[i])
-								continue;
-
-							LV2FavNameMsg msg = { kWorkTypeFavSetName, i, {} };
-							memcpy(msg.name, file_path + 1, file_path->size);
-							msg.name[MAX_FAV_NAME - 1] = '\0';
-							schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-							break;
-						}
-					}
 
 					if (property && property->type == uris.atom_URID &&
 						file_path && file_path->type == uris.atom_Path &&
@@ -1533,18 +1458,7 @@ namespace NAM {
 		if (!nam->currentModel)
 		{
 			// pas de modele, mais les favoris meritent d'etre gardes
-			std::string joined;
-
-			for (int i = 0; i < NUM_FAVS; i++)
-			{
-				joined.append(nam->favPaths[i], strnlen(nam->favPaths[i], MAX_FILE_NAME));
-				joined += '\t';
-				joined.append(nam->favNames[i], strnlen(nam->favNames[i], MAX_FAV_NAME));
-				joined += '\n';
-			}
-
-			store(handle, nam->uris.favs_String, joined.c_str(), joined.size() + 1,
-				nam->uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+			nam->ranger_favoris(store, handle);
 
 			return LV2_STATE_SUCCESS;
 		}
@@ -1564,23 +1478,7 @@ namespace NAM {
 		store(handle, nam->uris.model_Path, apath, strlen(apath) + 1, nam->uris.atom_Path,
 			LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-		// Les huit favoris, sinon ils disparaitraient au rechargement de la
-		// pedalboard. Un seul champ texte, les chemins separes par des sauts
-		// de ligne : un emplacement vide reste une ligne vide.
-		{
-			std::string joined;
-
-			for (int i = 0; i < NUM_FAVS; i++)
-			{
-				joined.append(nam->favPaths[i], strnlen(nam->favPaths[i], MAX_FILE_NAME));
-				joined += '\t';
-				joined.append(nam->favNames[i], strnlen(nam->favNames[i], MAX_FAV_NAME));
-				joined += '\n';
-			}
-
-			store(handle, nam->uris.favs_String, joined.c_str(), joined.size() + 1,
-				nam->uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
-		}
+		nam->ranger_favoris(store, handle);
 
 		LV2_State_Free_Path* free_path = (LV2_State_Free_Path *)lv2_features_data(features, LV2_STATE__freePath);
 
@@ -1624,38 +1522,63 @@ namespace NAM {
 
 					std::string line = joined.substr(start, cut - start);
 
-					// apres la tabulation : le NOM libre. Les etats les plus
-					// anciens y rangeaient un gain (devenu un port) : un contenu
-					// numerique pur est donc ignore plutot que pris pour un nom.
+					// Les etats d'avant rangeaient apres une tabulation tantot
+					// un gain, tantot un nom tape. Les deux ont disparu : on
+					// coupe a la tabulation et on ne garde que le chemin.
 					const size_t tab = line.find('\t');
-					std::string suite;
-					// apres la tabulation : le nom tape
 
 					if (tab != std::string::npos)
-					{
-						suite = line.substr(tab + 1);
 						line.resize(tab);
-
-						bool numerique = !suite.empty();
-						for (size_t k = 0; k < suite.size(); k++)
-						{
-							if (!isdigit((unsigned char)suite[k]) && suite[k] != '.'
-								&& suite[k] != '-' && suite[k] != '+')
-							{
-								numerique = false;
-								break;
-							}
-						}
-
-						if (!numerique && suite.size() < MAX_FAV_NAME)
-							memcpy(nam->favNames[i], suite.c_str(), suite.size() + 1);
-					}
 
 					if (line.size() < MAX_FILE_NAME)
 						memcpy(nam->favPaths[i], line.c_str(), line.size() + 1);
 
 					start = cut + 1;
 				}
+			}
+		}
+
+		// ---- le nom choisi dans la liste, favori par favori --------------
+		// Sans cela, rouvrir une pedalboard ramenerait tous les favoris a AUTO
+		// des que l'hote ne repose pas lui-meme la valeur du port.
+		{
+			size_t   nsize = 0;
+			uint32_t ntype = 0;
+			uint32_t nflags = 0;
+			const void* noms = retrieve(handle, nam->uris.favNames_String,
+				&nsize, &ntype, &nflags);
+
+			if (noms != nullptr && ntype == nam->uris.atom_String && nsize > 0)
+			{
+				std::string liste(static_cast<const char*>(noms), nsize - 1);
+				size_t start = 0;
+
+				for (int i = 0; i < NUM_FAVS; i++)
+				{
+					size_t cut = liste.find(',', start);
+
+					if (cut == std::string::npos)
+						cut = liste.size();
+
+					const std::string champ = liste.substr(start, cut - start);
+
+					if (!champ.empty())
+					{
+						// zero compris : c'est AUTO, un choix comme un autre
+						const int rang = atoi(champ.c_str());
+
+						if (rang >= 0 && rang < FAV_NAME_COUNT)
+							nam->favNameChoice[i].store(rang, std::memory_order_release);
+					}
+
+					if (cut >= liste.size())
+						break;
+
+					start = cut + 1;
+				}
+
+				// le thread audio les reposera dans les ports de controle
+				nam->nomsARemettre.store(true, std::memory_order_release);
 			}
 		}
 
@@ -2054,23 +1977,6 @@ namespace NAM {
 			}
 		}
 
-		if (valeur->type == uris.atom_String && valeur->size > 0
-			&& valeur->size <= MAX_FAV_NAME)
-		{
-			for (int i = 0; i < NUM_FAVS; i++)
-			{
-				if (cible != uris.fav_Name[i])
-					continue;
-
-				nameSetVus.fetch_add(1, std::memory_order_release);
-
-				LV2FavNameMsg msg = { kWorkTypeFavSetName, i, {} };
-				memcpy(msg.name, valeur + 1, valeur->size);
-				msg.name[MAX_FAV_NAME - 1] = '\0';
-				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
-				return;
-			}
-		}
 	}
 
 	void Plugin::hmi_addressed(LV2_Handle handle, uint32_t index,
@@ -2135,29 +2041,17 @@ namespace NAM {
 		if (fav < 1 || fav > NUM_FAVS)
 			return;
 
-		// Trois sources, dans cet ordre :
-		//  1. le nom CHOISI DANS LA LISTE (port de controle) -- seul canal qui
-		//     traverse l'image Starless, ou la saisie libre ne remonte pas ;
+		// Deux sources, dans cet ordre :
+		//  1. le nom CHOISI DANS LA LISTE -- seul canal qui traverse l'image
+		//     Starless : un parametre de type chaine n'y redescend pas jusqu'au
+		//     plugin, alors qu'un port de controle enumere passe toujours ;
 		//  2. le nom du fichier, sans dossier ni extension.
-		// La saisie libre a ete RETIREE : sur l'image Starless, un parametre de
-		// type chaine ne redescend pas jusqu'au plugin, alors qu'un port de
-		// controle enumere passe toujours.
-		const char* src = nullptr;
+		const char* src = "";
 
-		// 1. le nom TAPE dans l'interface, s'il existe
-		if (favNames[fav - 1][0] != '\0')
-			src = favNames[fav - 1];
+		const int choix = favNameChoice[fav - 1].load(std::memory_order_acquire);
 
-		if (src == nullptr && ports.favNamePort[fav - 1] != nullptr)
-		{
-			const int choix = (int)*(ports.favNamePort[fav - 1]);
-
-			if (choix > 0 && choix < FAV_NAME_COUNT)
-				src = FAV_NAME_TABLE[choix];
-		}
-
-		if (src == nullptr)
-			src = "";
+		if (choix > 0 && choix < FAV_NAME_COUNT)
+			src = FAV_NAME_TABLE[choix];
 
 		if (src[0] == '\0')
 		{
@@ -2264,28 +2158,61 @@ namespace NAM {
 		lv2_atom_forge_pop(&atom_forge, &frame);
 	}
 
-	// Annonce un nom a l'hote. Lecon de la banque de CV : state:interface ne
-	// suffit PAS -- le host n'ecrit dans la pedalboard que ce qu'il a appris par
-	// une notification. Sans ce patch:Set, les noms seraient perdus au
-	// rechargement, exactement comme les Name N Text l'avaient ete.
-	void Plugin::write_fav_name(int slot)
+	// Range les favoris dans l'etat : les chemins d'abord, un par ligne, puis
+	// les rangs choisis dans la liste des noms, separes par des virgules. Deux
+	// cles distinctes -- un etat ecrit par une version d'avant n'a pas la
+	// seconde, et ses favoris repartent simplement sur AUTO.
+	void Plugin::ranger_favoris(LV2_State_Store_Function store, LV2_State_Handle handle)
 	{
-		if (slot < 0 || slot >= NUM_FAVS)
+		std::string chemins;
+		std::string noms;
+
+		for (int i = 0; i < NUM_FAVS; i++)
+		{
+			chemins.append(favPaths[i], strnlen(favPaths[i], MAX_FILE_NAME));
+			chemins += '\n';
+
+			if (i != 0)
+				noms += ',';
+
+			noms += std::to_string(favNameChoice[i].load(std::memory_order_acquire));
+		}
+
+		store(handle, uris.favs_String, chemins.c_str(), chemins.size() + 1,
+			uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+
+		store(handle, uris.favNames_String, noms.c_str(), noms.size() + 1,
+			uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+	}
+
+	// Repose dans les ports de controle les rangs repris de l'etat. Un plugin
+	// ne peut pas ecrire dans ses propres ports d'entree, mais l'extension kx
+	// permet de le DEMANDER a l'hote -- meme recette que pour les gains.
+	// Sans cela, la liste du panneau afficherait AUTO alors que l'ecran de la
+	// machine, lui, connait deja le bon nom.
+	void Plugin::remettre_noms()
+	{
+		if (portreq == nullptr || portreq->request_change == nullptr)
+		{
+			kxEtat = 0;	// l'hote ne fournit pas l'extension
 			return;
+		}
 
-		const uint32_t len = (uint32_t)strnlen(favNames[slot], MAX_FAV_NAME);
+		for (int i = 0; i < NUM_FAVS; i++)
+		{
+			if (ports.favNamePort[i] == nullptr)
+				continue;
 
-		LV2_Atom_Forge_Frame frame;
+			const int rang = favNameChoice[i].load(std::memory_order_acquire);
 
-		lv2_atom_forge_frame_time(&atom_forge, 0);
-		lv2_atom_forge_object(&atom_forge, &frame, 0, uris.patch_Set);
+			if ((float)rang == *(ports.favNamePort[i]))
+				continue;	// l'hote a deja la bonne valeur
 
-		lv2_atom_forge_key(&atom_forge, uris.patch_property);
-		lv2_atom_forge_urid(&atom_forge, uris.fav_Name[slot]);
-		lv2_atom_forge_key(&atom_forge, uris.patch_value);
-		lv2_atom_forge_string(&atom_forge, favNames[slot], len);
+			const uint32_t index = (uint32_t)(56 + i);	// ports fav_name_1..10
 
-		lv2_atom_forge_pop(&atom_forge, &frame);
+			const int rep = portreq->request_change(portreq->handle, index, (float)rang);
+			kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
+		}
 	}
 
 	void Plugin::write_current_path()

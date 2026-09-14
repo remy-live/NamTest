@@ -1,0 +1,4 @@
+# rien de ce qui est engendré ne se commet
+build/
+__pycache__/
+*.pyc

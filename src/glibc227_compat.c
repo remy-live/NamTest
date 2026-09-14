@@ -20,7 +20,7 @@
 #define _LARGEFILE64_SOURCE
 
 __attribute__((used)) static const char build_tag[] =
-	"NAMTEST_BUILD65_AARCH64_20260910";
+	"NAMTEST_BUILD66_AARCH64_20260914";
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/stat.h>

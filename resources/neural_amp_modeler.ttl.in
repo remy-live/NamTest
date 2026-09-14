@@ -2287,133 +2287,30 @@ A large collection of models is available at https://www.tone3000.com
 		lv2:maximum 10.0;
 		rdfs:comment "Choisit le favori par tension : la plage 0-10 V est decoupee en 10 bandes egales";
 	], [
-		a lv2:ControlPort, lv2:InputPort;
+		a lv2:ControlPort, lv2:OutputPort;
 		lv2:index 80;
-		lv2:symbol "web_slot";
-		lv2:name "Web Slot";
-		lv2:default 1;
-		lv2:minimum 1;
+		lv2:symbol "db_slot";
+		lv2:name "Fav dB Slot";
+		lv2:default 0;
+		lv2:minimum 0;
 		lv2:maximum 10;
 		lv2:portProperty lv2:integer;
-		rdfs:comment "Favori qui recoit les caracteres tapes dans l'interface";
+		rdfs:comment "Favori dont Auto dB Slot porte la correction - tourne une fois par seconde";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
-		a lv2:ControlPort, lv2:InputPort;
+		a lv2:ControlPort, lv2:OutputPort;
 		lv2:index 81;
-		lv2:symbol "web_char";
-		lv2:name "Web Char";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 65535;
-		lv2:portProperty lv2:integer;
-		rdfs:comment "compteur x 4096 + favori x 256 + code du caractere ; 1 efface tout, 8 efface le dernier";
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:InputPort;
-		lv2:index 82;
-		lv2:symbol "web_strobe";
-		lv2:name "Web Strobe";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 255;
-		lv2:portProperty lv2:integer;
-		rdfs:comment "Tout CHANGEMENT de cette valeur fait lire un caractere";
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 83;
-		lv2:symbol "name_slot";
-		lv2:name "Name Slot";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 10;
-		lv2:portProperty lv2:integer;
-		rdfs:comment "De quel favori les sorties n1..n7 portent le nom - tourne une fois par seconde";
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 84;
-		lv2:symbol "n1";
-		lv2:name "N1";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 85;
-		lv2:symbol "n2";
-		lv2:name "N2";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 86;
-		lv2:symbol "n3";
-		lv2:name "N3";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 87;
-		lv2:symbol "n4";
-		lv2:name "N4";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 88;
-		lv2:symbol "n5";
-		lv2:name "N5";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 89;
-		lv2:symbol "n6";
-		lv2:name "N6";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 90;
-		lv2:symbol "n7";
-		lv2:name "N7";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum 127;
-		lv2:portProperty lv2:integer;
-		pg:group <@NAM_LV2_ID@#groupe0>;
-	], [
-		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 91;
 		lv2:symbol "auto_db_slot";
 		lv2:name "Auto dB Slot";
 		lv2:default 0.0;
 		lv2:minimum -12.0;
 		lv2:maximum 12.0;
 		units:unit units:db;
-		rdfs:comment "Correction mesuree du favori designe par Name Slot";
+		rdfs:comment "Correction mesuree du favori designe par Fav dB Slot";
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
-		lv2:index 92;
+		lv2:index 82;
 		lv2:symbol "auto_apply";
 		lv2:name "Appliquer";
 		lv2:default 0;
@@ -2424,7 +2321,7 @@ A large collection of models is available at https://www.tone3000.com
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:InputPort;
-		lv2:index 93;
+		lv2:index 83;
 		lv2:symbol "auto_undo";
 		lv2:name "Annuler";
 		lv2:default 0;
@@ -2435,7 +2332,7 @@ A large collection of models is available at https://www.tone3000.com
 		pg:group <@NAM_LV2_ID@#groupe0>;
 	], [
 		a lv2:ControlPort, lv2:OutputPort;
-		lv2:index 94;
+		lv2:index 84;
 		lv2:symbol "kx_state";
 		lv2:name "KX";
 		lv2:default 0;

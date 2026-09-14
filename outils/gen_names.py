@@ -47,22 +47,6 @@ with open('src/fav_names.h', 'w') as f:
         f.write('\t"%s",\n' % n)
     f.write("};\n\n#define FAV_NAME_COUNT %d\n" % len(NOMS))
 
-bloc = ""
-for i in range(1, 9):
-    bloc += """	], [
-		a lv2:ControlPort, lv2:InputPort;
-		lv2:index %d;
-		lv2:symbol "fav_name_%d";
-		lv2:name "Name %d";
-		lv2:default 0;
-		lv2:minimum 0;
-		lv2:maximum %d;
-		lv2:portProperty lv2:enumeration, lv2:integer;
-		rdfs:comment "Nom affiche pour le favori %d - AUTO reprend le nom du fichier";
-""" % (49 + i, i, i, len(NOMS) - 1, i)
-    for k, n in enumerate(NOMS):
-        bloc += '\t\tlv2:scalePoint [ rdfs:label "%s"; rdf:value %d ];\n' % (n, k)
-
-open('/tmp/fav_name_ports.ttl', 'w').write(bloc)
 print("%d noms" % len(NOMS))
 print("exemples :", ", ".join(NOMS[1:14]))
+print("les ports de noms sortent de gen_ports.py, qui relit ce fichier")

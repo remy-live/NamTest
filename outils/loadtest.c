@@ -17,7 +17,8 @@
 #include "lv2/options/options.h"
 #include "lv2/buf-size/buf-size.h"
 
-#define N_PORTS 80
+/* tous les ports du descripteur : NUM_PORTS_TOTAL dans src/nam_plugin.h */
+#define N_PORTS 85
 #define N_SAMPLES 256
 
 /* --- urid map minimal --- */

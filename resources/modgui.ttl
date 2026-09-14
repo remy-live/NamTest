@@ -8,16 +8,8 @@
         modgui:stylesheet <modgui/stylesheet-nam.css>;
         modgui:settingsTemplate <modgui/settings.html>;
         modgui:javascript <modgui/script-nam.js>;
-        modgui:monitoredOutputs [ lv2:symbol "name_slot" ] ,
-                                [ lv2:symbol "n1" ] ,
-                                [ lv2:symbol "n2" ] ,
-                                [ lv2:symbol "n3" ] ,
-                                [ lv2:symbol "n4" ] ,
-                                [ lv2:symbol "n5" ] ,
-                                [ lv2:symbol "n6" ] ,
-                                [ lv2:symbol "n7" ] ,
-                                [ lv2:symbol "auto_db_slot" ] ,
-                                [ lv2:symbol "auto_state" ];
+        modgui:monitoredOutputs [ lv2:symbol "auto_db_slot" ] ,
+                                [ lv2:symbol "db_slot" ];
 
         modgui:screenshot <modgui/screenshot-nam.png>;
         modgui:thumbnail <modgui/thumbnail-nam.png>;

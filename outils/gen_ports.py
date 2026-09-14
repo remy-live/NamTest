@@ -4,6 +4,7 @@ N = 10   # favoris
 P = []   # (symbole, nom, type, extra)
 def ctl(sym, nom, **kw): P.append(('ctl', sym, nom, kw))
 def out(sym, nom, **kw): P.append(('out', sym, nom, kw))
+def cv(sym, nom, **kw):  P.append(('cv', sym, nom, kw))
 
 ctl('model_index','Model', mini=0, maxi=199, defaut=0, entier=True,
     aide="Rang du modele dans le dossier NAM Models")
@@ -48,12 +49,26 @@ ctl('auto_gain','Auto Gain', toggle=True, aide="Mesurer et egaliser le volume de
 out('auto_state','Auto', mini=-1, maxi=2, entier=True, aide="-1 echec, 0 rien, 1 en cours, 2 fait")
 out('auto_offset','Auto dB', mini=-12.0, maxi=12.0, defaut=0.0, db=True,
     aide="Correction mesuree du favori actif")
+cv('cv_select','CV Fav', mini=0.0, maxi=10.0, defaut=0.0,
+    aide="Choisit le favori par tension : la plage 0-10 V est decoupee en %d bandes egales" % N)
+out('db_slot','Fav dB Slot', mini=0, maxi=N, entier=True,
+    aide="Favori dont Auto dB Slot porte la correction - tourne une fois par seconde")
+out('auto_db_slot','Auto dB Slot', mini=-12.0, maxi=12.0, defaut=0.0, db=True,
+    aide="Correction mesuree du favori designe par Fav dB Slot")
+ctl('auto_apply','Appliquer', toggle=True,
+    aide="Poser les corrections mesurees dans les boutons de gain")
+ctl('auto_undo','Annuler', toggle=True,
+    aide="Remettre les gains d'avant l'application")
+out('kx_state','KX', mini=-1, maxi=2, defaut=0, entier=True,
+    aide="0 l'hote ne permet pas d'ecrire dans les boutons, 1 possible, 2 accepte, -1 refuse")
 
 # --- descripteur
 sortie = []
 for k, (genre, sym, nom, kw) in enumerate(P):
     idx = 7 + k
-    t = 'lv2:ControlPort, lv2:InputPort' if genre == 'ctl' else 'lv2:ControlPort, lv2:OutputPort'
+    t = {'ctl': 'lv2:ControlPort, lv2:InputPort',
+         'out': 'lv2:ControlPort, lv2:OutputPort',
+         'cv':  'lv2:InputPort, lv2:CVPort, mod:CVPort'}[genre]
     b = '\t], [\n\t\ta %s;\n\t\tlv2:index %d;\n\t\tlv2:symbol "%s";\n\t\tlv2:name "%s";\n' % (t, idx, sym, nom)
     if kw.get('toggle'):
         b += '\t\tlv2:default 0;\n\t\tlv2:minimum 0;\n\t\tlv2:maximum 1;\n'
@@ -69,26 +84,16 @@ for k, (genre, sym, nom, kw) in enumerate(P):
             b += '\t\tunits:unit units:db;\n'
     if kw.get('aide'):
         b += '\t\trdfs:comment "%s";\n' % kw['aide']
-    b += '\t\tpg:group <@NAM_LV2_ID@#groupe%d>;\n' % kw.get('grp', 0)
+    # l'entree CV n'appartient a aucun groupe : mod-ui la dessine sur le boitier
+    if genre != 'cv':
+        b += '\t\tpg:group <@NAM_LV2_ID@#groupe%d>;\n' % kw.get('grp', 0)
     for v, n in enumerate(kw.get('enum', [])):
         b += '\t\tlv2:scalePoint [ rdfs:label "%s"; rdf:value %d ];\n' % (n, v)
     sortie.append(b)
 
-# entree CV en dernier
-idx_cv = 7 + len(P)
-sortie.append('''\t], [
-\t\ta lv2:InputPort, lv2:CVPort, mod:CVPort;
-\t\tlv2:index %d;
-\t\tlv2:symbol "cv_select";
-\t\tlv2:name "CV Fav";
-\t\tlv2:default 0.0;
-\t\tlv2:minimum 0.0;
-\t\tlv2:maximum 10.0;
-\t\trdfs:comment "Choisit le favori par tension : la plage 0-10 V est decoupee en %d bandes egales";
-''' % (idx_cv, N))
-
 open('/tmp/ports.ttl','w').write(''.join(sortie) + '\t].')
 
 # --- ordre attendu, pour le controle et pour la structure C
-open('/tmp/ordre.txt','w').write('\n'.join([p[1] for p in P] + ['cv_select']))
-print("%d ports engendres, CV a l'indice %d, total %d" % (len(P)+1, idx_cv, idx_cv+1))
+open('/tmp/ordre.txt','w').write('\n'.join([p[1] for p in P]))
+print("%d ports engendres, du 7 au %d, total %d avec les 7 d'origine"
+      % (len(P), 7 + len(P) - 1, 7 + len(P)))
