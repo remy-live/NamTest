@@ -57,9 +57,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           nom="${{ steps.tag.outputs.nom }}"
-          # --target cree le tag sur ce commit s'il n'existe pas encore
+          # Republier un numero deja sorti doit REMPLACER, pas echouer : la
+          # release et son tag sont refaits sur le commit courant.
+          if gh release view "$nom" > /dev/null 2>&1; then
+            gh release delete "$nom" --yes --cleanup-tag
+          fi
+          # --target pose le tag sur ce commit
           gh release create "$nom" \
-            dist/nam-test-*.tar.gz \
+            dist/nam_test_*.tar.gz \
             --target "$GITHUB_SHA" \
             --title "NAM TEST $nom" \
             --notes-file /tmp/notes.md

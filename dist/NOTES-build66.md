@@ -26,12 +26,25 @@ sept autres. Un port énuméré passe toujours, lui.
 
 ## Installer
 
+Le bundle s'appelle **`nam_test.lv2`**, comme les précédents : il remplace celui
+qui est déjà sur la machine, et ne se mêle pas au NAM du magasin.
+
 ```bash
-tar xzf nam-test-build66-aarch64.tar.gz
-scp -r neural_amp_modeler.lv2 root@192.168.51.1:/root/.lv2/
+tar xzf nam_test_build66.tar.gz
+
+COPYFILE_DISABLE=1 tar czf - --exclude='._*' nam_test.lv2 \
+  | ssh root@192.168.51.1 'rm -rf /root/.lv2/nam_test.lv2 && tar xzf - -C /root/.lv2'
+
+ssh root@192.168.51.1 'systemctl restart mod-ui'
 ```
 
-Puis redémarrer la pédale, pour que mod-ui relise les greffons.
+Deux choses au premier chargement :
+
+* les réglages des ports disparus sont ignorés — un pédalier existant se
+  rouvre, mais une assignation de footswitch qui pointait sur l'un d'eux est
+  perdue et se refait ;
+* si le panneau garde son ancien aspect, recharger la page en forçant
+  (`Cmd-Maj-R`) : le navigateur garde l'ancien gabarit en cache.
 
 Compilé pour aarch64 (`-mcpu=cortex-a35`), libstdc++ en statique, symboles
 retirés, rien au-delà de `GLIBC_2.27`.

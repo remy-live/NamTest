@@ -24,19 +24,30 @@ set(NAM_LV2_ID http://remy.local/nam-test)
 add_subdirectory(src)
 
 
-# create neural_amp_modeler.lv2
+# Le bundle s'appelle nam_test.lv2, PAS neural_amp_modeler.lv2.
+#
+# Deux raisons, et la seconde coute cher :
+#   - c'est le nom deja pose sur la machine, celui que la procedure
+#     d'installation efface et remplace ;
+#   - le NAM du magasin s'installe sous neural_amp_modeler.lv2. Deux dossiers
+#     du meme nom, ou deux bundles qui declarent le meme greffon, et mod-ui ne
+#     sait plus lequel prendre.
+# Le fichier .so et les .ttl gardent leur nom DANS le bundle : manifest.ttl les
+# designe par un chemin relatif, et c'est ainsi depuis le debut.
+set(NAM_BUNDLE nam_test.lv2)
+
 add_custom_target(copy_binaries ALL
-	${CMAKE_COMMAND} -E copy "$<TARGET_FILE:neural_amp_modeler>" neural_amp_modeler.lv2/
+	${CMAKE_COMMAND} -E copy "$<TARGET_FILE:neural_amp_modeler>" ${NAM_BUNDLE}/
 	DEPENDS neural_amp_modeler
 )
 
-file(COPY resources/modgui.ttl DESTINATION neural_amp_modeler.lv2)
-file(COPY resources/modgui DESTINATION neural_amp_modeler.lv2)
+file(COPY resources/modgui.ttl DESTINATION ${NAM_BUNDLE})
+file(COPY resources/modgui DESTINATION ${NAM_BUNDLE})
 
-configure_file(resources/manifest.ttl.in neural_amp_modeler.lv2/manifest.ttl)
-configure_file(resources/neural_amp_modeler.ttl.in neural_amp_modeler.lv2/neural_amp_modeler.ttl)
+configure_file(resources/manifest.ttl.in ${NAM_BUNDLE}/manifest.ttl)
+configure_file(resources/neural_amp_modeler.ttl.in ${NAM_BUNDLE}/neural_amp_modeler.ttl)
 
-install (DIRECTORY ${CMAKE_BINARY_DIR}/neural_amp_modeler.lv2
+install (DIRECTORY ${CMAKE_BINARY_DIR}/${NAM_BUNDLE}
        DESTINATION ${LIB_INSTALL_DIR}/lv2
 )
 

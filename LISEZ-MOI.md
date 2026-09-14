@@ -12,15 +12,27 @@ exactement l'arbre livré ici.
 
 ## Installer le binaire livré
 
-`dist/nam-test-build66-aarch64.tar.gz` contient le bundle prêt à poser, compilé
-pour aarch64 (`-mcpu=cortex-a35`), libstdc++ en statique, symboles retirés.
-C'est le même fichier que la pièce jointe de la release.
+`dist/nam_test_build66.tar.gz` contient le bundle prêt à poser, compilé pour
+aarch64 (`-mcpu=cortex-a35`), libstdc++ en statique, symboles retirés. C'est le
+même fichier que la pièce jointe de la release.
+
+Le bundle s'appelle **`nam_test.lv2`** — pas `neural_amp_modeler.lv2`, qui est
+le nom du NAM du magasin. La compilation le produit directement sous ce nom,
+plus rien à renommer à la main.
 
 ```bash
-tar xzf dist/nam-test-build66-aarch64.tar.gz
-scp -r neural_amp_modeler.lv2 root@192.168.51.1:/root/.lv2/
-# puis redémarrer la pédale, pour que mod-ui relise les greffons
+tar xzf nam_test_build66.tar.gz
+
+COPYFILE_DISABLE=1 tar czf - --exclude='._*' nam_test.lv2 \
+  | ssh root@192.168.51.1 'rm -rf /root/.lv2/nam_test.lv2 && tar xzf - -C /root/.lv2'
+
+ssh root@192.168.51.1 'systemctl restart mod-ui'
 ```
+
+Les réglages des ports disparus sont ignorés au rechargement : un pédalier
+existant se rouvre, mais une assignation de footswitch qui pointait sur l'un
+d'eux est perdue. Si le panneau garde son ancien aspect, recharger la page en
+forçant — le navigateur garde l'ancien gabarit en cache.
 
 ---
 
@@ -155,6 +167,9 @@ c'est le seul canal de diagnostic fiable.
   après elle pour que les deux aillent toujours ensemble.
 * Le choix du modèle NAM ne bouge pas : sélecteur de fichier, `Model`, `Next`,
   `Prev`, `Browse`/`Load`, `Rescan`, favoris, tout reste tel quel.
+* La compilation produit le bundle sous son vrai nom, **`nam_test.lv2`** : il
+  n'y a plus à le renommer à la main après coup, et il ne peut plus se
+  confondre avec le `neural_amp_modeler.lv2` du magasin.
 * `outils/verif_ports.py` compare le descripteur et la structure C port par
   port ; `outils/etattest.c` vérifie que les noms survivent au rechargement.
 * `gen_settings.py` et `gen_ports.py` engendrent de nouveau *exactement* les
