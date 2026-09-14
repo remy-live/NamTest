@@ -1,0 +1,4902 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 9bfb6ff..0b5efac 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -19,7 +19,7 @@ else()
+ 	message(FATAL_ERROR "Unrecognized Platform!")
+ endif()
+ 
+-set(NAM_LV2_ID http://github.com/mikeoliphant/neural-amp-modeler-lv2)
++set(NAM_LV2_ID http://remy.local/nam-test)
+ 
+ add_subdirectory(src)
+ 
+diff --git a/resources/modgui.ttl b/resources/modgui.ttl
+index 360d26f..09e395c 100644
+--- a/resources/modgui.ttl
++++ b/resources/modgui.ttl
+@@ -1,11 +1,24 @@
+ @prefix modgui: <http://moddevices.com/ns/modgui#>.
+ @prefix lv2:    <http://lv2plug.in/ns/lv2core#>.
+ 
+-<http://github.com/mikeoliphant/neural-amp-modeler-lv2>
++<http://remy.local/nam-test>
+     modgui:gui [
+         modgui:resourcesDirectory <modgui>;
+         modgui:iconTemplate <modgui/icon-nam.html>;
+         modgui:stylesheet <modgui/stylesheet-nam.css>;
++        modgui:settingsTemplate <modgui/settings.html>;
++        modgui:javascript <modgui/script-nam.js>;
++        modgui:monitoredOutputs [ lv2:symbol "name_slot" ] ,
++                                [ lv2:symbol "n1" ] ,
++                                [ lv2:symbol "n2" ] ,
++                                [ lv2:symbol "n3" ] ,
++                                [ lv2:symbol "n4" ] ,
++                                [ lv2:symbol "n5" ] ,
++                                [ lv2:symbol "n6" ] ,
++                                [ lv2:symbol "n7" ] ,
++                                [ lv2:symbol "auto_db_slot" ] ,
++                                [ lv2:symbol "auto_state" ];
++
+         modgui:screenshot <modgui/screenshot-nam.png>;
+         modgui:thumbnail <modgui/thumbnail-nam.png>;
+         modgui:discussionURL <https://forum.mod.audio/t/neural-amp-modeler/10112> ;
+diff --git a/resources/modgui/icon-nam.html b/resources/modgui/icon-nam.html
+index 0aafb33..d23ea74 100644
+--- a/resources/modgui/icon-nam.html
++++ b/resources/modgui/icon-nam.html
+@@ -34,6 +34,11 @@
+             <div class="mod-pedal-input-image"></div>
+         </div>
+         {{/effect.ports.audio.input}}
++        {{#effect.ports.cv.input}}
++        <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-cv-port" mod-port-symbol="{{symbol}}">
++            <div class="mod-pedal-input-image"></div>
++        </div>
++        {{/effect.ports.cv.input}}
+     </div>
+     <div class="mod-pedal-output">
+         {{#effect.ports.audio.output}}
+diff --git a/resources/modgui/stylesheet-nam.css b/resources/modgui/stylesheet-nam.css
+index 7f9632b..7514615 100644
+--- a/resources/modgui/stylesheet-nam.css
++++ b/resources/modgui/stylesheet-nam.css
+@@ -128,3 +128,168 @@
+ .mod-pedal-nam .mod-enumerated .mod-enumerated-list > div.selected:hover {
+     background: #555;
+ }
++
++
++/* = PANNEAU DE REGLAGES (gabarit settings.html)
++================================================
++   Ce bloc avait ete PERDU en restaurant la feuille de style d'origine depuis
++   le depot : sans lui, le gabarit s'affiche sans grille ni ordre, les listes
++   restent deployees et se recouvrent, et les clics n'atteignent plus les
++   fichiers. */
++.x-set{{{cns}}} .x-sec-grid {
++    display:flex;
++    flex-wrap:wrap;
++    align-items:flex-start;
++}
++.x-set{{{cns}}} .x-break { flex:0 0 100%; height:0; margin:0; }
++.x-set{{{cns}}} .x-line-title {
++    flex:0 0 100%;
++    font-size:11px;
++    letter-spacing:1px;
++    text-transform:uppercase;
++    color:#b08ad0;
++    padding:10px 0 4px 4px;
++    border-top:1px solid rgba(255,255,255,0.12);
++}
++
++/* Le selecteur de fichier de mod-ui est une LISTE DEROULEE EN PLACE, pas une
++   ligne qui s'ouvre. Vouloir la refermer et la faire flotter la faisait
++   deborder sur la ligne suivante. On lui donne donc une hauteur fixe, et le
++   defilement se fait A L'INTERIEUR. */
++.x-set{{{cns}}} .x-file {
++    flex:0 0 330px;
++    height:132px;
++    margin-right:10px !important;
++    overflow:hidden;
++    position:relative;
++}
++.x-set{{{cns}}} .x-file .mod-enumerated-selected {
++    padding:0 6px;
++    height:22px;
++    line-height:22px;
++    white-space:nowrap;
++    overflow:hidden;
++    text-overflow:ellipsis;
++    color:#fff;
++    font-size:11px;
++}
++.x-set{{{cns}}} .x-file .mod-enumerated-list {
++    position:static;
++    max-height:104px;
++    overflow-y:auto;
++    background:rgba(0,0,0,0.35);
++    border-radius:4px;
++}
++.x-set{{{cns}}} .x-file [mod-role="enumeration-option"] {
++    font-size:11px;
++    padding:3px 6px;
++    white-space:nowrap;
++    overflow:hidden;
++    text-overflow:ellipsis;
++    cursor:pointer;
++}
++.x-set{{{cns}}} .x-file [mod-role="enumeration-option"]:hover { background:#4a3a5a; color:#fff; }
++
++/* les cellules voisines s'alignent en haut de la ligne, pas au milieu */
++.x-set{{{cns}}} .x-sec-grid { align-items:flex-start; }
++
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#model"] { order:10; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav1"] { order:110; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav2"] { order:120; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav3"] { order:130; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav4"] { order:140; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav5"] { order:150; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav6"] { order:160; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav7"] { order:170; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav8"] { order:180; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav9"] { order:190; }
++.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav10"] { order:200; }
++
++
++/* = PEDALE : n'y montrer que le MODELE COURANT
++   Le gabarit d'origine boucle sur tous les parametres fichier ; avec dix
++   favoris cela faisait onze listes empilees qui debordaient du boitier.
++   Les favoris se reglent dans le panneau. */
++.mod-pedal-nam [mod-parameter-uri*="#fav"] { display:none !important; }
++
++/* = PANNEAU : borner TOUTES les listes, pas seulement celles de fichiers
++   Un widget enumere de mod-ui s'affiche deroule en place. Sans hauteur fixe,
++   les listes de noms recouvrent les lignes voisines. */
++.x-set{{{cns}}} .mod-enumerated {
++    height:132px;
++    overflow:hidden;
++    position:relative;
++}
++.x-set{{{cns}}} .mod-enumerated .mod-enumerated-list {
++    position:static;
++    max-height:100px;
++    overflow-y:auto;
++    background:rgba(0,0,0,0.35);
++    border-radius:4px;
++}
++.x-set{{{cns}}} .mod-enumerated [mod-role="enumeration-option"] {
++    font-size:11px;
++    padding:3px 6px;
++    white-space:nowrap;
++    overflow:hidden;
++    text-overflow:ellipsis;
++    cursor:pointer;
++}
++
++/* toutes les cellules d'une ligne font la meme hauteur, alignees en haut */
++
++
++/* Ne RIEN imposer aux cellules natives : mod-ui place ses etiquettes en absolu
++   a l'interieur, et une hauteur ou une largeur forcee les fait chevaucher le
++   bouton. On se contente de ne pas les laisser flotter. */
++.x-set{{{cns}}} .x-cell { float:none !important; position:relative; }
++
++/* Seules les listes sont bornees -- elles seules debordent. */
++.x-set{{{cns}}} .mod-enumerated { height:126px; overflow:hidden; }
++.x-set{{{cns}}} .mod-enumerated .mod-enumerated-list {
++    position:static;
++    max-height:96px;
++    overflow-y:auto;
++}
++
++
++/* champs de saisie des noms, dans le panneau */
++.x-set{{{cns}}} .nam-typed {
++    flex:0 0 190px;
++    height:126px;
++    padding-top:8px;
++    box-sizing:border-box;
++}
++.x-set{{{cns}}} .nam-typed-title {
++    display:block;
++    font-size:10px;
++    color:#9a7fb8;
++    letter-spacing:1px;
++    text-transform:uppercase;
++    margin-bottom:6px;
++}
++.x-set{{{cns}}} .nam-typed-input {
++    width:170px;
++    height:26px;
++    background:#141414;
++    border:1px solid #4a3a5a;
++    border-radius:4px;
++    color:#fff;
++    font-family:"Questrial", sans-serif;
++    font-size:13px;
++    padding:0 8px;
++    box-sizing:border-box;
++}
++
++
++
++
++
++/* correction mesuree par l'auto-gain, affichee a cote du champ de nom */
++.x-set{{{cns}}} .nam-auto {
++    display:block;
++    margin-top:6px;
++    font-size:11px;
++    color:#6e6e6e;
++}
++.x-set{{{cns}}} .nam-auto.nam-auto-vif { color:#8fd98f; }
+diff --git a/resources/neural_amp_modeler.ttl.in b/resources/neural_amp_modeler.ttl.in
+index 1125b8d..4d27a54 100644
+--- a/resources/neural_amp_modeler.ttl.in
++++ b/resources/neural_amp_modeler.ttl.in
+@@ -13,6 +13,7 @@
+ @prefix state: <http://lv2plug.in/ns/ext/state#>.
+ @prefix work:  <http://lv2plug.in/ns/ext/worker#>.
+ @prefix mod: <http://moddevices.com/ns/mod#>.
++@prefix pg: <http://lv2plug.in/ns/ext/port-groups#>.
+ 
+ <@NAM_LV2_ID@#model>
+ 	a lv2:Parameter;
+@@ -20,8 +21,133 @@
+ 	rdfs:label "Neural Model";
+ 	rdfs:range atom:Path.
+ 
++<@NAM_LV2_ID@#fav1>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 1 Model";
++	pg:group <@NAM_LV2_ID@#groupe1>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav2>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 2 Model";
++	pg:group <@NAM_LV2_ID@#groupe2>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav3>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 3 Model";
++	pg:group <@NAM_LV2_ID@#groupe3>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav4>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 4 Model";
++	pg:group <@NAM_LV2_ID@#groupe4>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav5>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 5 Model";
++	pg:group <@NAM_LV2_ID@#groupe5>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav6>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 6 Model";
++	pg:group <@NAM_LV2_ID@#groupe6>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav7>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 7 Model";
++	pg:group <@NAM_LV2_ID@#groupe7>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav8>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 8 Model";
++	pg:group <@NAM_LV2_ID@#groupe8>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav9>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 9 Model";
++	pg:group <@NAM_LV2_ID@#groupe9>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#fav10>
++	a lv2:Parameter;
++	mod:fileTypes "nam,nammodel,json,aidax,aidadspmodel";
++	rdfs:label "Fav 10 Model";
++	pg:group <@NAM_LV2_ID@#groupe10>;
++	rdfs:range atom:Path.
++
++<@NAM_LV2_ID@#groupe1>
++	a pg:InputGroup;
++	lv2:name "Fav 1";
++	lv2:symbol "fav1_group".
++
++<@NAM_LV2_ID@#groupe2>
++	a pg:InputGroup;
++	lv2:name "Fav 2";
++	lv2:symbol "fav2_group".
++
++<@NAM_LV2_ID@#groupe3>
++	a pg:InputGroup;
++	lv2:name "Fav 3";
++	lv2:symbol "fav3_group".
++
++<@NAM_LV2_ID@#groupe4>
++	a pg:InputGroup;
++	lv2:name "Fav 4";
++	lv2:symbol "fav4_group".
++
++<@NAM_LV2_ID@#groupe5>
++	a pg:InputGroup;
++	lv2:name "Fav 5";
++	lv2:symbol "fav5_group".
++
++<@NAM_LV2_ID@#groupe6>
++	a pg:InputGroup;
++	lv2:name "Fav 6";
++	lv2:symbol "fav6_group".
++
++<@NAM_LV2_ID@#groupe7>
++	a pg:InputGroup;
++	lv2:name "Fav 7";
++	lv2:symbol "fav7_group".
++
++<@NAM_LV2_ID@#groupe8>
++	a pg:InputGroup;
++	lv2:name "Fav 8";
++	lv2:symbol "fav8_group".
++
++<@NAM_LV2_ID@#groupe9>
++	a pg:InputGroup;
++	lv2:name "Fav 9";
++	lv2:symbol "fav9_group".
++
++<@NAM_LV2_ID@#groupe10>
++	a pg:InputGroup;
++	lv2:name "Fav 10";
++	lv2:symbol "fav10_group".
++
++<@NAM_LV2_ID@#groupe0>
++	a pg:InputGroup;
++	lv2:name "AAA Navigation";
++	lv2:symbol "nav_group".
++
+ <@NAM_LV2_ID@>
+-	a lv2:Plugin, lv2:SimulatorPlugin, doap:Project;
++	a lv2:Plugin, lv2:SimulatorPlugin, mod:ControlVoltagePlugin, doap:Project;
+ 	doap:name "Neural Amp Modeler";
+ 	lv2:project <@NAM_LV2_ID@>;
+ 	lv2:minorVersion @PROJECT_VERSION_MINOR@;
+@@ -34,8 +160,11 @@
+ 	];
+ 
+ 	lv2:requiredFeature urid:map, work:schedule;
+-	lv2:optionalFeature lv2:hardRTCapable, opts:options, state:threadSafeRestore;
+-	lv2:extensionData work:interface, state:interface, opts:interface;
++	lv2:optionalFeature lv2:hardRTCapable, opts:options, state:threadSafeRestore,
++		<http://moddevices.com/ns/hmi#WidgetControl>,
++		<http://kx.studio/ns/lv2ext/control-input-port-change-request>;
++	lv2:extensionData work:interface, state:interface, opts:interface,
++		<http://moddevices.com/ns/hmi#PluginNotification>;
+ 	opts:supportedOption <http://lv2plug.in/ns/ext/buf-size#maxBlockLength>;
+ 
+ 	rdfs:comment """
+@@ -48,7 +177,17 @@ Models supported:
+ A large collection of models is available at https://www.tone3000.com
+ """;
+ 
+-	patch:writable <@NAM_LV2_ID@#model>;
++	patch:writable <@NAM_LV2_ID@#model>,
++		<@NAM_LV2_ID@#fav1>,
++		<@NAM_LV2_ID@#fav2>,
++		<@NAM_LV2_ID@#fav3>,
++		<@NAM_LV2_ID@#fav4>,
++		<@NAM_LV2_ID@#fav5>,
++		<@NAM_LV2_ID@#fav6>,
++		<@NAM_LV2_ID@#fav7>,
++		<@NAM_LV2_ID@#fav8>,
++		<@NAM_LV2_ID@#fav9>,
++		<@NAM_LV2_ID@#fav10>;
+ 
+ 	# Control
+ 	lv2:port [
+@@ -92,6 +231,7 @@ A large collection of models is available at https://www.tone3000.com
+ 		lv2:minimum -20.0;
+ 		lv2:maximum 20.0;
+ 		units:unit units:db;
++		pg:group <@NAM_LV2_ID@#groupe0>;
+ 	], [
+ 		a lv2:ControlPort, lv2:InputPort;
+ 		lv2:index 5;
+@@ -101,12 +241,2207 @@ A large collection of models is available at https://www.tone3000.com
+ 		lv2:minimum -20.0;
+ 		lv2:maximum 20.0;
+ 		units:unit units:db;
++		pg:group <@NAM_LV2_ID@#groupe0>;
+ 	], [
+ 		a lv2:ControlPort, lv2:InputPort;
+ 		lv2:index 6;
+ 		lv2:symbol "quality_scale";
+ 		lv2:name "Quality";
+-		lv2:default 1.0;
++		lv2:default 0.0;
+ 		lv2:minimum 0.0;
+ 		lv2:maximum 1.0;
+-	].
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 7;
++		lv2:symbol "model_index";
++		lv2:name "Model";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "Rang du modele dans le dossier NAM Models";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 8;
++		lv2:symbol "step_next";
++		lv2:name "Next";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Modele suivant";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 9;
++		lv2:symbol "step_prev";
++		lv2:name "Prev";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Modele precedent";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 10;
++		lv2:symbol "rescan";
++		lv2:name "Rescan";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Relire le dossier des modeles";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 11;
++		lv2:symbol "model_count";
++		lv2:name "Count";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 200;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 12;
++		lv2:symbol "current_index";
++		lv2:name "Current";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 13;
++		lv2:symbol "load_status";
++		lv2:name "Status";
++		lv2:default 0;
++		lv2:minimum -1;
++		lv2:maximum 2;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "-1 echec, 0 rien, 1 en cours, 2 charge";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 14;
++		lv2:symbol "browse";
++		lv2:name "Browse";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Parcourir SANS charger";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 15;
++		lv2:symbol "action";
++		lv2:name "Load";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le modele parcouru";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 16;
++		lv2:symbol "browse_index";
++		lv2:name "Browsing";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 17;
++		lv2:symbol "active_fav";
++		lv2:name "Active Fav";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 10;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 18;
++		lv2:symbol "fav_1";
++		lv2:name "Fav 1";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 1";
++		pg:group <@NAM_LV2_ID@#groupe1>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 19;
++		lv2:symbol "fav_2";
++		lv2:name "Fav 2";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 2";
++		pg:group <@NAM_LV2_ID@#groupe2>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 20;
++		lv2:symbol "fav_3";
++		lv2:name "Fav 3";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 3";
++		pg:group <@NAM_LV2_ID@#groupe3>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 21;
++		lv2:symbol "fav_4";
++		lv2:name "Fav 4";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 4";
++		pg:group <@NAM_LV2_ID@#groupe4>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 22;
++		lv2:symbol "fav_5";
++		lv2:name "Fav 5";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 5";
++		pg:group <@NAM_LV2_ID@#groupe5>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 23;
++		lv2:symbol "fav_6";
++		lv2:name "Fav 6";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 6";
++		pg:group <@NAM_LV2_ID@#groupe6>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 24;
++		lv2:symbol "fav_7";
++		lv2:name "Fav 7";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 7";
++		pg:group <@NAM_LV2_ID@#groupe7>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 25;
++		lv2:symbol "fav_8";
++		lv2:name "Fav 8";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 8";
++		pg:group <@NAM_LV2_ID@#groupe8>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 26;
++		lv2:symbol "fav_9";
++		lv2:name "Fav 9";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 9";
++		pg:group <@NAM_LV2_ID@#groupe9>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 27;
++		lv2:symbol "fav_10";
++		lv2:name "Fav 10";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Charger le favori 10";
++		pg:group <@NAM_LV2_ID@#groupe10>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 28;
++		lv2:symbol "store_slot";
++		lv2:name "Slot";
++		lv2:default 1;
++		lv2:minimum 1;
++		lv2:maximum 10;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "Emplacement vise par Store";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 29;
++		lv2:symbol "store";
++		lv2:name "Store";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele courant dans l'emplacement Slot";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 30;
++		lv2:symbol "fav_gain";
++		lv2:name "Gain";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain hors favori";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 31;
++		lv2:symbol "applied_gain";
++		lv2:name "Gain Applied";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 32;
++		lv2:symbol "store_count";
++		lv2:name "Stores";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 999;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 33;
++		lv2:symbol "fav_browse";
++		lv2:name "Fav Next";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Passer au favori non vide suivant";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 34;
++		lv2:symbol "fav_gain_1";
++		lv2:name "Gain 1";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 1";
++		pg:group <@NAM_LV2_ID@#groupe1>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 35;
++		lv2:symbol "fav_gain_2";
++		lv2:name "Gain 2";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 2";
++		pg:group <@NAM_LV2_ID@#groupe2>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 36;
++		lv2:symbol "fav_gain_3";
++		lv2:name "Gain 3";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 3";
++		pg:group <@NAM_LV2_ID@#groupe3>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 37;
++		lv2:symbol "fav_gain_4";
++		lv2:name "Gain 4";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 4";
++		pg:group <@NAM_LV2_ID@#groupe4>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 38;
++		lv2:symbol "fav_gain_5";
++		lv2:name "Gain 5";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 5";
++		pg:group <@NAM_LV2_ID@#groupe5>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 39;
++		lv2:symbol "fav_gain_6";
++		lv2:name "Gain 6";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 6";
++		pg:group <@NAM_LV2_ID@#groupe6>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 40;
++		lv2:symbol "fav_gain_7";
++		lv2:name "Gain 7";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 7";
++		pg:group <@NAM_LV2_ID@#groupe7>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 41;
++		lv2:symbol "fav_gain_8";
++		lv2:name "Gain 8";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 8";
++		pg:group <@NAM_LV2_ID@#groupe8>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 42;
++		lv2:symbol "fav_gain_9";
++		lv2:name "Gain 9";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 9";
++		pg:group <@NAM_LV2_ID@#groupe9>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 43;
++		lv2:symbol "fav_gain_10";
++		lv2:name "Gain 10";
++		lv2:default 0.0;
++		lv2:minimum -20.0;
++		lv2:maximum 20.0;
++		units:unit units:db;
++		rdfs:comment "Gain du favori 10";
++		pg:group <@NAM_LV2_ID@#groupe10>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 44;
++		lv2:symbol "fav_index_1";
++		lv2:name "Idx 1";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe1>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 45;
++		lv2:symbol "fav_index_2";
++		lv2:name "Idx 2";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe2>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 46;
++		lv2:symbol "fav_index_3";
++		lv2:name "Idx 3";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe3>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 47;
++		lv2:symbol "fav_index_4";
++		lv2:name "Idx 4";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe4>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 48;
++		lv2:symbol "fav_index_5";
++		lv2:name "Idx 5";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe5>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 49;
++		lv2:symbol "fav_index_6";
++		lv2:name "Idx 6";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe6>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 50;
++		lv2:symbol "fav_index_7";
++		lv2:name "Idx 7";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe7>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 51;
++		lv2:symbol "fav_index_8";
++		lv2:name "Idx 8";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe8>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 52;
++		lv2:symbol "fav_index_9";
++		lv2:name "Idx 9";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe9>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 53;
++		lv2:symbol "fav_index_10";
++		lv2:name "Idx 10";
++		lv2:default -1;
++		lv2:minimum -1;
++		lv2:maximum 199;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe10>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 54;
++		lv2:symbol "cycle_count";
++		lv2:name "Cycle";
++		lv2:default 10;
++		lv2:minimum 1;
++		lv2:maximum 10;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "Nombre de favoris parcourus par Fav Next";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 55;
++		lv2:symbol "hmi_state";
++		lv2:name "HMI";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 999;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "unites = etat, dizaines = capacites de l'ecran";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 56;
++		lv2:symbol "fav_name_1";
++		lv2:name "Name 1";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 1";
++		pg:group <@NAM_LV2_ID@#groupe1>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 57;
++		lv2:symbol "fav_name_2";
++		lv2:name "Name 2";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 2";
++		pg:group <@NAM_LV2_ID@#groupe2>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 58;
++		lv2:symbol "fav_name_3";
++		lv2:name "Name 3";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 3";
++		pg:group <@NAM_LV2_ID@#groupe3>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 59;
++		lv2:symbol "fav_name_4";
++		lv2:name "Name 4";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 4";
++		pg:group <@NAM_LV2_ID@#groupe4>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 60;
++		lv2:symbol "fav_name_5";
++		lv2:name "Name 5";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 5";
++		pg:group <@NAM_LV2_ID@#groupe5>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 61;
++		lv2:symbol "fav_name_6";
++		lv2:name "Name 6";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 6";
++		pg:group <@NAM_LV2_ID@#groupe6>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 62;
++		lv2:symbol "fav_name_7";
++		lv2:name "Name 7";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 7";
++		pg:group <@NAM_LV2_ID@#groupe7>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 63;
++		lv2:symbol "fav_name_8";
++		lv2:name "Name 8";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 8";
++		pg:group <@NAM_LV2_ID@#groupe8>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 64;
++		lv2:symbol "fav_name_9";
++		lv2:name "Name 9";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 9";
++		pg:group <@NAM_LV2_ID@#groupe9>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 65;
++		lv2:symbol "fav_name_10";
++		lv2:name "Name 10";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 124;
++		lv2:portProperty lv2:enumeration, lv2:integer;
++		rdfs:comment "Nom affiche pour le favori 10";
++		pg:group <@NAM_LV2_ID@#groupe10>;
++		lv2:scalePoint [ rdfs:label "AUTO"; rdf:value 0 ];
++		lv2:scalePoint [ rdfs:label "CLEAN"; rdf:value 1 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 1"; rdf:value 2 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 2"; rdf:value 3 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 3"; rdf:value 4 ];
++		lv2:scalePoint [ rdfs:label "CLEAN 4"; rdf:value 5 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH"; rdf:value 6 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH1"; rdf:value 7 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH2"; rdf:value 8 ];
++		lv2:scalePoint [ rdfs:label "CRUNCH3"; rdf:value 9 ];
++		lv2:scalePoint [ rdfs:label "DRIVE"; rdf:value 10 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 1"; rdf:value 11 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 2"; rdf:value 12 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 3"; rdf:value 13 ];
++		lv2:scalePoint [ rdfs:label "DRIVE 4"; rdf:value 14 ];
++		lv2:scalePoint [ rdfs:label "LEAD"; rdf:value 15 ];
++		lv2:scalePoint [ rdfs:label "LEAD 1"; rdf:value 16 ];
++		lv2:scalePoint [ rdfs:label "LEAD 2"; rdf:value 17 ];
++		lv2:scalePoint [ rdfs:label "LEAD 3"; rdf:value 18 ];
++		lv2:scalePoint [ rdfs:label "SOLO"; rdf:value 19 ];
++		lv2:scalePoint [ rdfs:label "SOLO 1"; rdf:value 20 ];
++		lv2:scalePoint [ rdfs:label "SOLO 2"; rdf:value 21 ];
++		lv2:scalePoint [ rdfs:label "SOLO 3"; rdf:value 22 ];
++		lv2:scalePoint [ rdfs:label "RYTHME"; rdf:value 23 ];
++		lv2:scalePoint [ rdfs:label "RYTHME1"; rdf:value 24 ];
++		lv2:scalePoint [ rdfs:label "RYTHME2"; rdf:value 25 ];
++		lv2:scalePoint [ rdfs:label "RYTHME3"; rdf:value 26 ];
++		lv2:scalePoint [ rdfs:label "BOOST"; rdf:value 27 ];
++		lv2:scalePoint [ rdfs:label "BOOST 1"; rdf:value 28 ];
++		lv2:scalePoint [ rdfs:label "BOOST 2"; rdf:value 29 ];
++		lv2:scalePoint [ rdfs:label "FUZZ"; rdf:value 30 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 1"; rdf:value 31 ];
++		lv2:scalePoint [ rdfs:label "FUZZ 2"; rdf:value 32 ];
++		lv2:scalePoint [ rdfs:label "METAL"; rdf:value 33 ];
++		lv2:scalePoint [ rdfs:label "METAL 1"; rdf:value 34 ];
++		lv2:scalePoint [ rdfs:label "METAL 2"; rdf:value 35 ];
++		lv2:scalePoint [ rdfs:label "BLUES"; rdf:value 36 ];
++		lv2:scalePoint [ rdfs:label "BLUES 1"; rdf:value 37 ];
++		lv2:scalePoint [ rdfs:label "BLUES 2"; rdf:value 38 ];
++		lv2:scalePoint [ rdfs:label "ROCK"; rdf:value 39 ];
++		lv2:scalePoint [ rdfs:label "ROCK 1"; rdf:value 40 ];
++		lv2:scalePoint [ rdfs:label "ROCK 2"; rdf:value 41 ];
++		lv2:scalePoint [ rdfs:label "FUNK"; rdf:value 42 ];
++		lv2:scalePoint [ rdfs:label "FUNK 1"; rdf:value 43 ];
++		lv2:scalePoint [ rdfs:label "FUNK 2"; rdf:value 44 ];
++		lv2:scalePoint [ rdfs:label "JAZZ"; rdf:value 45 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 1"; rdf:value 46 ];
++		lv2:scalePoint [ rdfs:label "JAZZ 2"; rdf:value 47 ];
++		lv2:scalePoint [ rdfs:label "SON"; rdf:value 48 ];
++		lv2:scalePoint [ rdfs:label "SON 1"; rdf:value 49 ];
++		lv2:scalePoint [ rdfs:label "SON 2"; rdf:value 50 ];
++		lv2:scalePoint [ rdfs:label "SON 3"; rdf:value 51 ];
++		lv2:scalePoint [ rdfs:label "SON 4"; rdf:value 52 ];
++		lv2:scalePoint [ rdfs:label "SON 5"; rdf:value 53 ];
++		lv2:scalePoint [ rdfs:label "SON 6"; rdf:value 54 ];
++		lv2:scalePoint [ rdfs:label "SON 7"; rdf:value 55 ];
++		lv2:scalePoint [ rdfs:label "SON 8"; rdf:value 56 ];
++		lv2:scalePoint [ rdfs:label "AMPLI"; rdf:value 57 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 1"; rdf:value 58 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 2"; rdf:value 59 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 3"; rdf:value 60 ];
++		lv2:scalePoint [ rdfs:label "AMPLI 4"; rdf:value 61 ];
++		lv2:scalePoint [ rdfs:label "INTRO"; rdf:value 62 ];
++		lv2:scalePoint [ rdfs:label "FINAL"; rdf:value 63 ];
++		lv2:scalePoint [ rdfs:label "COUPLET"; rdf:value 64 ];
++		lv2:scalePoint [ rdfs:label "REFRAIN"; rdf:value 65 ];
++		lv2:scalePoint [ rdfs:label "PONT"; rdf:value 66 ];
++		lv2:scalePoint [ rdfs:label "BACKING"; rdf:value 67 ];
++		lv2:scalePoint [ rdfs:label "ARPEGE"; rdf:value 68 ];
++		lv2:scalePoint [ rdfs:label "PUNK"; rdf:value 69 ];
++		lv2:scalePoint [ rdfs:label "REGGAE"; rdf:value 70 ];
++		lv2:scalePoint [ rdfs:label "COUNTRY"; rdf:value 71 ];
++		lv2:scalePoint [ rdfs:label "SURF"; rdf:value 72 ];
++		lv2:scalePoint [ rdfs:label "GRUNGE"; rdf:value 73 ];
++		lv2:scalePoint [ rdfs:label "STONER"; rdf:value 74 ];
++		lv2:scalePoint [ rdfs:label "DJENT"; rdf:value 75 ];
++		lv2:scalePoint [ rdfs:label "SHRED"; rdf:value 76 ];
++		lv2:scalePoint [ rdfs:label "GOSPEL"; rdf:value 77 ];
++		lv2:scalePoint [ rdfs:label "TWEED"; rdf:value 78 ];
++		lv2:scalePoint [ rdfs:label "PLEXI"; rdf:value 79 ];
++		lv2:scalePoint [ rdfs:label "JCM800"; rdf:value 80 ];
++		lv2:scalePoint [ rdfs:label "AC30"; rdf:value 81 ];
++		lv2:scalePoint [ rdfs:label "DELUXE"; rdf:value 82 ];
++		lv2:scalePoint [ rdfs:label "TWIN"; rdf:value 83 ];
++		lv2:scalePoint [ rdfs:label "BASSMAN"; rdf:value 84 ];
++		lv2:scalePoint [ rdfs:label "PRINCE"; rdf:value 85 ];
++		lv2:scalePoint [ rdfs:label "RECTO"; rdf:value 86 ];
++		lv2:scalePoint [ rdfs:label "MARK"; rdf:value 87 ];
++		lv2:scalePoint [ rdfs:label "JC120"; rdf:value 88 ];
++		lv2:scalePoint [ rdfs:label "SUPRO"; rdf:value 89 ];
++		lv2:scalePoint [ rdfs:label "HIWATT"; rdf:value 90 ];
++		lv2:scalePoint [ rdfs:label "ORANGE"; rdf:value 91 ];
++		lv2:scalePoint [ rdfs:label "SOLDANO"; rdf:value 92 ];
++		lv2:scalePoint [ rdfs:label "FRIEDMN"; rdf:value 93 ];
++		lv2:scalePoint [ rdfs:label "DUMBLE"; rdf:value 94 ];
++		lv2:scalePoint [ rdfs:label "ZWRECK"; rdf:value 95 ];
++		lv2:scalePoint [ rdfs:label "BOGNER"; rdf:value 96 ];
++		lv2:scalePoint [ rdfs:label "DIEZEL"; rdf:value 97 ];
++		lv2:scalePoint [ rdfs:label "ENGL"; rdf:value 98 ];
++		lv2:scalePoint [ rdfs:label "MATCHLS"; rdf:value 99 ];
++		lv2:scalePoint [ rdfs:label "BADCAT"; rdf:value 100 ];
++		lv2:scalePoint [ rdfs:label "SILVER"; rdf:value 101 ];
++		lv2:scalePoint [ rdfs:label "BLACKFC"; rdf:value 102 ];
++		lv2:scalePoint [ rdfs:label "BROWN"; rdf:value 103 ];
++		lv2:scalePoint [ rdfs:label "TS808"; rdf:value 104 ];
++		lv2:scalePoint [ rdfs:label "TIMMY"; rdf:value 105 ];
++		lv2:scalePoint [ rdfs:label "KLON"; rdf:value 106 ];
++		lv2:scalePoint [ rdfs:label "BIGMUFF"; rdf:value 107 ];
++		lv2:scalePoint [ rdfs:label "OCTAVE"; rdf:value 108 ];
++		lv2:scalePoint [ rdfs:label "TREBLE"; rdf:value 109 ];
++		lv2:scalePoint [ rdfs:label "GRIT"; rdf:value 110 ];
++		lv2:scalePoint [ rdfs:label "EDGE"; rdf:value 111 ];
++		lv2:scalePoint [ rdfs:label "CHIME"; rdf:value 112 ];
++		lv2:scalePoint [ rdfs:label "GLASS"; rdf:value 113 ];
++		lv2:scalePoint [ rdfs:label "VELOURS"; rdf:value 114 ];
++		lv2:scalePoint [ rdfs:label "GRAS"; rdf:value 115 ];
++		lv2:scalePoint [ rdfs:label "FIN"; rdf:value 116 ];
++		lv2:scalePoint [ rdfs:label "CREUX"; rdf:value 117 ];
++		lv2:scalePoint [ rdfs:label "MEDIUM"; rdf:value 118 ];
++		lv2:scalePoint [ rdfs:label "CHAUD"; rdf:value 119 ];
++		lv2:scalePoint [ rdfs:label "CLAIR"; rdf:value 120 ];
++		lv2:scalePoint [ rdfs:label "SOMBRE"; rdf:value 121 ];
++		lv2:scalePoint [ rdfs:label "PUNCH"; rdf:value 122 ];
++		lv2:scalePoint [ rdfs:label "MORDANT"; rdf:value 123 ];
++		lv2:scalePoint [ rdfs:label "DOUX"; rdf:value 124 ];
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 66;
++		lv2:symbol "fav_store_1";
++		lv2:name "Store 1";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 1";
++		pg:group <@NAM_LV2_ID@#groupe1>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 67;
++		lv2:symbol "fav_store_2";
++		lv2:name "Store 2";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 2";
++		pg:group <@NAM_LV2_ID@#groupe2>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 68;
++		lv2:symbol "fav_store_3";
++		lv2:name "Store 3";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 3";
++		pg:group <@NAM_LV2_ID@#groupe3>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 69;
++		lv2:symbol "fav_store_4";
++		lv2:name "Store 4";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 4";
++		pg:group <@NAM_LV2_ID@#groupe4>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 70;
++		lv2:symbol "fav_store_5";
++		lv2:name "Store 5";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 5";
++		pg:group <@NAM_LV2_ID@#groupe5>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 71;
++		lv2:symbol "fav_store_6";
++		lv2:name "Store 6";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 6";
++		pg:group <@NAM_LV2_ID@#groupe6>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 72;
++		lv2:symbol "fav_store_7";
++		lv2:name "Store 7";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 7";
++		pg:group <@NAM_LV2_ID@#groupe7>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 73;
++		lv2:symbol "fav_store_8";
++		lv2:name "Store 8";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 8";
++		pg:group <@NAM_LV2_ID@#groupe8>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 74;
++		lv2:symbol "fav_store_9";
++		lv2:name "Store 9";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 9";
++		pg:group <@NAM_LV2_ID@#groupe9>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 75;
++		lv2:symbol "fav_store_10";
++		lv2:name "Store 10";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Ranger le modele qui joue dans le favori 10";
++		pg:group <@NAM_LV2_ID@#groupe10>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 76;
++		lv2:symbol "auto_gain";
++		lv2:name "Auto Gain";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Mesurer et egaliser le volume de tous les favoris";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 77;
++		lv2:symbol "auto_state";
++		lv2:name "Auto";
++		lv2:default 0;
++		lv2:minimum -1;
++		lv2:maximum 2;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "-1 echec, 0 rien, 1 en cours, 2 fait";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 78;
++		lv2:symbol "auto_offset";
++		lv2:name "Auto dB";
++		lv2:default 0.0;
++		lv2:minimum -12.0;
++		lv2:maximum 12.0;
++		units:unit units:db;
++		rdfs:comment "Correction mesuree du favori actif";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:InputPort, lv2:CVPort, mod:CVPort;
++		lv2:index 79;
++		lv2:symbol "cv_select";
++		lv2:name "CV Fav";
++		lv2:default 0.0;
++		lv2:minimum 0.0;
++		lv2:maximum 10.0;
++		rdfs:comment "Choisit le favori par tension : la plage 0-10 V est decoupee en 10 bandes egales";
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 80;
++		lv2:symbol "web_slot";
++		lv2:name "Web Slot";
++		lv2:default 1;
++		lv2:minimum 1;
++		lv2:maximum 10;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "Favori qui recoit les caracteres tapes dans l'interface";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 81;
++		lv2:symbol "web_char";
++		lv2:name "Web Char";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 65535;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "compteur x 4096 + favori x 256 + code du caractere ; 1 efface tout, 8 efface le dernier";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 82;
++		lv2:symbol "web_strobe";
++		lv2:name "Web Strobe";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 255;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "Tout CHANGEMENT de cette valeur fait lire un caractere";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 83;
++		lv2:symbol "name_slot";
++		lv2:name "Name Slot";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 10;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "De quel favori les sorties n1..n7 portent le nom - tourne une fois par seconde";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 84;
++		lv2:symbol "n1";
++		lv2:name "N1";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 85;
++		lv2:symbol "n2";
++		lv2:name "N2";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 86;
++		lv2:symbol "n3";
++		lv2:name "N3";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 87;
++		lv2:symbol "n4";
++		lv2:name "N4";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 88;
++		lv2:symbol "n5";
++		lv2:name "N5";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 89;
++		lv2:symbol "n6";
++		lv2:name "N6";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 90;
++		lv2:symbol "n7";
++		lv2:name "N7";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 127;
++		lv2:portProperty lv2:integer;
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 91;
++		lv2:symbol "auto_db_slot";
++		lv2:name "Auto dB Slot";
++		lv2:default 0.0;
++		lv2:minimum -12.0;
++		lv2:maximum 12.0;
++		units:unit units:db;
++		rdfs:comment "Correction mesuree du favori designe par Name Slot";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 92;
++		lv2:symbol "auto_apply";
++		lv2:name "Appliquer";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Poser les corrections mesurees dans les boutons de gain";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:InputPort;
++		lv2:index 93;
++		lv2:symbol "auto_undo";
++		lv2:name "Annuler";
++		lv2:default 0;
++		lv2:minimum 0;
++		lv2:maximum 1;
++		lv2:portProperty lv2:toggled, mod:preferMomentaryOnByDefault;
++		rdfs:comment "Remettre les gains d'avant l'application";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	], [
++		a lv2:ControlPort, lv2:OutputPort;
++		lv2:index 94;
++		lv2:symbol "kx_state";
++		lv2:name "KX";
++		lv2:default 0;
++		lv2:minimum -1;
++		lv2:maximum 2;
++		lv2:portProperty lv2:integer;
++		rdfs:comment "0 l'hote ne permet pas d'ecrire dans les boutons, 1 possible, 2 accepte, -1 refuse";
++		pg:group <@NAM_LV2_ID@#groupe0>;
++	].
+\ No newline at end of file
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 33acb43..faee1bf 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -32,7 +32,8 @@ endif ()
+ 
+ add_subdirectory(../deps/NeuralAudio NeuralAudio)
+ 
+-set(SOURCES nam_lv2.cpp
++set(SOURCES glibc227_compat.c
++	nam_lv2.cpp
+ 	nam_plugin.cpp
+ 	nam_plugin.h)
+ 
+@@ -76,3 +77,6 @@ set_target_properties(neural_amp_modeler
+ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+ 	target_compile_definitions(neural_amp_modeler PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+ endif()
++
++target_link_options(neural_amp_modeler PRIVATE
++    "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/export.map")
+diff --git a/src/nam_lv2.cpp b/src/nam_lv2.cpp
+index d0538b9..06ebbab 100644
+--- a/src/nam_lv2.cpp
++++ b/src/nam_lv2.cpp
+@@ -69,6 +69,7 @@ static const void* extension_data(const char* uri)
+ 	static const LV2_Options_Interface options = { NAM::Plugin::options_get, NAM::Plugin::options_set };
+ 	static const LV2_State_Interface   state   = { NAM::Plugin::save, NAM::Plugin::restore};
+ 	static const LV2_Worker_Interface  worker  = { NAM::Plugin::work, NAM::Plugin::work_response, NULL };
++	static const LV2_HMI_PluginNotification hmi = { NAM::Plugin::hmi_addressed, NAM::Plugin::hmi_unaddressed };
+ 
+ 	if (!strcmp(uri, LV2_OPTIONS__interface))
+ 		return &options;
+@@ -76,13 +77,15 @@ static const void* extension_data(const char* uri)
+ 		return &state;
+ 	if (!strcmp(uri, LV2_WORKER__interface))
+ 		return &worker;
++	if (!strcmp(uri, LV2_HMI__PluginNotification))
++		return &hmi;
+ 
+ 	return NULL;
+ }
+ 
+ static const LV2_Descriptor descriptor =
+ {
+-	"http://github.com/mikeoliphant/neural-amp-modeler-lv2",
++	"http://remy.local/nam-test",
+ 	instantiate,
+ 	connect_port,
+ 	activate,
+diff --git a/src/nam_plugin.cpp b/src/nam_plugin.cpp
+index dae47de..f43f56f 100644
+--- a/src/nam_plugin.cpp
++++ b/src/nam_plugin.cpp
+@@ -5,6 +5,15 @@
+ 
+ #include "nam_plugin.h"
+ 
++#define _DEFAULT_SOURCE
++#include <dirent.h>
++#include <algorithm>
++#include <cstring>
++#include <cctype>
++#include <cstdio>
++#include <cmath>
++#include <functional>
++
+ #define SMOOTH_EPSILON .0001f
+ 
+ #ifndef BYPASS_DB_THRESHOLD
+@@ -45,6 +54,21 @@ namespace NAM {
+ 	{
+ 		this->sampleRate = sampleRate;
+ 
++		for (int i = 0; i < NUM_FAVS; i++)
++			favIndexes[i].store(-1, std::memory_order_release);
++
++		// tout annoncer au premier passage : sans cela l'hote ne sait rien des
++		// noms et ne les ecrira pas dans la pedalboard
++		favNameDirty.store((1u << NUM_FAVS) - 1, std::memory_order_release);
++		favDirty.store((1u << NUM_FAVS) - 1, std::memory_order_release);
++
++		// seuil de l'appui long converti une fois pour toutes en echantillons
++		longPressSamples = (uint32_t)(sampleRate * LONG_PRESS_MS / 1000.0);
++		longPressMaxSamples = (uint32_t)(sampleRate * LONG_PRESS_MAX_MS / 1000.0);
++		ecranPeriode = (uint32_t)(sampleRate * 0.25);	// 4 rafraichissements par seconde
++		popupHold = (uint64_t)(sampleRate * 3.0);	// silence de 3 s pendant un plein ecran
++		tracePeriode = (uint32_t)(sampleRate * 2.0);	// etat ecrit toutes les 2 s
++
+ 		loader.SetExternalSampleRate((int)sampleRate);
+ 
+ 		// for fetching initial options, can be null
+@@ -54,6 +78,23 @@ namespace NAM {
+ 		{
+ 			if (std::string(features[i]->URI) == std::string(LV2_URID__map))
+ 				map = static_cast<LV2_URID_Map*>(features[i]->data);
++
++			if (std::string(features[i]->URI)
++				== std::string(LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI))
++			{
++				portreq = static_cast<const LV2_ControlInputPort_Change_Request*>(
++					features[i]->data);
++
++				// 1 des l'initialisation : sinon 0 melange "l'hote ne le
++				// permet pas" et "on n'a jamais demande"
++				kxEtat = (portreq != nullptr && portreq->request_change != nullptr) ? 1 : 0;
++			}
++
++			if (std::string(features[i]->URI) == std::string(LV2_HMI__WidgetControl))
++			{
++				hmi = static_cast<const LV2_HMI_WidgetControl*>(features[i]->data);
++				hmiSize = hmi != nullptr ? hmi->size : 0;
++			}
+ 			else if (std::string(features[i]->URI) == std::string(LV2_WORKER__schedule))
+ 				schedule = static_cast<LV2_Worker_Schedule*>(features[i]->data);
+ 			else if (std::string(features[i]->URI) == std::string(LV2_LOG__log))
+@@ -87,12 +128,42 @@ namespace NAM {
+ 		uris.atom_URID = map->map(map->handle, LV2_ATOM__URID);
+ 		uris.bufSize_maxBlockLength = map->map(map->handle, LV2_BUF_SIZE__maxBlockLength);
+ 		uris.patch_Set = map->map(map->handle, LV2_PATCH__Set);
++		uris.patch_Put = map->map(map->handle, LV2_PATCH__Put);
++		uris.patch_body = map->map(map->handle, LV2_PATCH__body);
+ 		uris.patch_Get = map->map(map->handle, LV2_PATCH__Get);
+ 		uris.patch_property = map->map(map->handle, LV2_PATCH__property);
+ 		uris.patch_value = map->map(map->handle, LV2_PATCH__value);
+ 		uris.units_frame = map->map(map->handle, LV2_UNITS__frame);
+ 
+ 		uris.model_Path = map->map(map->handle, MODEL_URI);
++		uris.atom_String = map->map(map->handle, LV2_ATOM__String);
++		uris.favs_String = map->map(map->handle, PlUGIN_URI "#favorites");
++
++		{
++			// PIEGE PAYE CHER : cette table etait ecrite a la main avec HUIT
++			// entrees quand NUM_FAVS est passe a DIX. Les deux dernieres
++			// valaient nullptr, la fonction de correspondance les
++			// deferencait, et le serveur audio mourait a l'ajout de l'effet.
++			// Elle est desormais construite a partir de NUM_FAVS, donc elle ne
++			// peut plus se desynchroniser.
++			static const char* favUris[NUM_FAVS] = {
++				PlUGIN_URI "#fav1", PlUGIN_URI "#fav2", PlUGIN_URI "#fav3",
++				PlUGIN_URI "#fav4", PlUGIN_URI "#fav5", PlUGIN_URI "#fav6",
++				PlUGIN_URI "#fav7", PlUGIN_URI "#fav8", PlUGIN_URI "#fav9",
++				PlUGIN_URI "#fav10"
++			};
++
++			static_assert(sizeof(favUris) / sizeof(favUris[0]) == NUM_FAVS,
++				"la table des URI de favoris doit compter exactement NUM_FAVS entrees");
++
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				// garde-fou : ne jamais passer un pointeur nul a la table des URI
++				uris.fav_Path[i] = (favUris[i] != nullptr)
++					? map->map(map->handle, favUris[i]) : 0;
++				uris.fav_Name[i] = 0;	// les noms libres ont ete retires
++			}
++		}
+ 
+ 		if (options != nullptr)
+ 			options_set(this, options);
+@@ -101,6 +172,114 @@ namespace NAM {
+ 	}
+ 
+ 	// runs on non-RT, can block or use [de]allocations
++
++	// Parcourt MODEL_DIR sur deux niveaux et garde les fichiers de modele.
++	// Tourne dans le thread du WORKER, jamais dans le thread audio.
++	// d_type plutot que stat() : stat n'existe comme symbole que depuis
++	// GLIBC_2.33 alors que la machine plafonne a 2.27.
++	void Plugin::scan_models()
++	{
++		static const char* exts[] = { ".nam", ".nammodel", ".aidax", ".aidadspmodel", ".json" };
++
++		modelFiles.clear();
++
++		auto has_ext = [](const char* name) -> bool {
++			const char* dot = strrchr(name, '.');
++			if (dot == nullptr)
++				return false;
++			for (const char* e : exts)
++			{
++				if (strcasecmp(dot, e) == 0)
++					return true;
++			}
++			return false;
++		};
++
++		// std::function pour pouvoir recurser : une lambda auto ne peut pas
++		// s'appeler elle-meme (son type n'est pas encore deduit)
++		std::function<void(const std::string&, bool)> scan_dir =
++			[&](const std::string& dir, bool recurse)
++		{
++			DIR* d = opendir(dir.c_str());
++			if (d == nullptr)
++				return;
++
++			struct dirent* ent;
++			while ((ent = readdir(d)) != nullptr)
++			{
++				if (ent->d_name[0] == '.')
++					continue;
++				if ((int)modelFiles.size() >= MAX_MODELS)
++					break;
++
++				std::string full = dir + "/" + ent->d_name;
++				bool isDir = (ent->d_type == DT_DIR);
++
++				if (ent->d_type == DT_UNKNOWN)
++				{
++					// systeme de fichiers qui ne renseigne pas d_type :
++					// un opendir d'essai tranche, sans appeler stat.
++					DIR* t = opendir(full.c_str());
++					isDir = (t != nullptr);
++					if (t != nullptr)
++						closedir(t);
++				}
++
++				if (isDir)
++				{
++					if (recurse)
++						scan_dir(full, false);
++				}
++				else if (has_ext(ent->d_name))
++				{
++					modelFiles.push_back(full);
++				}
++			}
++
++			closedir(d);
++		};
++
++		scan_dir(MODEL_DIR, true);
++
++		std::sort(modelFiles.begin(), modelFiles.end());
++
++		// Retrouver le rang du modele deja charge, s'il est dans la liste
++		int found = -1;
++		for (size_t i = 0; i < modelFiles.size(); i++)
++		{
++			if (modelFiles[i] == currentModelPath)
++			{
++				found = (int)i;
++				break;
++			}
++		}
++
++		selectedIndex.store(found, std::memory_order_release);
++
++		// rang de chaque favori, recalcule sur le CHEMIN : ajouter ou retirer
++		// d'autres modeles ne casse donc aucun favori
++		for (int f = 0; f < NUM_FAVS; f++)
++		{
++			int rang = -1;
++
++			if (favPaths[f][0] != '\0')
++			{
++				for (size_t i = 0; i < modelFiles.size(); i++)
++				{
++					if (modelFiles[i] == favPaths[f])
++					{
++						rang = (int)i;
++						break;
++					}
++				}
++			}
++
++			favIndexes[f].store(rang, std::memory_order_release);
++		}
++
++		modelCount.store((int)modelFiles.size(), std::memory_order_release);
++	}
++
+ 	LV2_Worker_Status Plugin::work(LV2_Handle instance, LV2_Worker_Respond_Function respond, LV2_Worker_Respond_Handle handle,
+ 		uint32_t size, const void* data)
+ 	{
+@@ -149,6 +328,11 @@ namespace NAM {
+ 					response.path[0] = '\0';
+ 
+ 					lv2_log_error(&nam->logger, "Unable to load model from: '%s'\n", msg->path);
++
++					// la journalisation ne ressort pas sur le Dwarf : on rend
++					// l'echec visible par un port de sortie
++					nam->loadStatus.store(-1, std::memory_order_release);
++					nam->pendingIndex.store(-1, std::memory_order_release);
+ 				}
+ 
+ 				respond(handle, sizeof(response), &response);
+@@ -156,6 +340,253 @@ namespace NAM {
+ 				return result;
+ 			}
+ 
++			case kWorkTypeAutoGain:
++			{
++				static_cast<NAM::Plugin*>(instance)->mesurer_niveaux();
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeTrace:
++			{
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				FILE* f = fopen(TRACE_PATH, "w");
++
++				if (f == nullptr)
++					return LV2_WORKER_SUCCESS;
++
++				fprintf(f, "build      %s\n", nam_build_tag());
++				fprintf(f, "hmi        %s\n", nam->hmi ? "oui" : "NON");
++
++				if (nam->hmi != nullptr)
++				{
++					fprintf(f, "hmi.size   %lu (seuil popup %lu)\n",
++						(unsigned long)nam->hmi->size,
++						(unsigned long)LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE);
++					fprintf(f, "set_label  %s\n", nam->hmi->set_label ? "present" : "ABSENT");
++					fprintf(f, "set_value  %s\n", nam->hmi->set_value ? "present" : "ABSENT");
++					fprintf(f, "popup_msg  %s\n", nam->hmi->popup_message ? "present" : "ABSENT");
++				}
++
++				fprintf(f, "\nports assignes (index: caps momentane)\n");
++
++				bool aucun = true;
++				for (int k = 0; k < NUM_PORTS_TOTAL; k++)
++				{
++					if (nam->hmiAddr[k] == nullptr)
++						continue;
++
++					aucun = false;
++					fprintf(f, "  port %-3d caps=%d%s%s%s%s%s momentane=%s\n", k,
++						nam->hmiCaps[k],
++						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_LED) ? " led" : "",
++						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Label) ? " LIBELLE" : "",
++						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Value) ? " valeur" : "",
++						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Unit) ? " unite" : "",
++						(nam->hmiCaps[k] & LV2_HMI_AddressingCapability_Indicator) ? " barre" : "",
++						nam->hmiMomentary[k] ? "oui" : "non");
++				}
++
++				if (aucun)
++					fprintf(f, "  AUCUN -- refaire l'assignation apres installation\n");
++
++				fprintf(f, "\npatch:Put recus       %d\n", nam->putVus.load(std::memory_order_acquire));
++				fprintf(f, "\nchangements vus sur web_char : %d\n", nam->webVus);
++				fprintf(f, "\nkx (ecriture des boutons) : %d  (0 absent, 1 present, 2 accepte, -1 refuse)\n",
++					nam->kxEtat);
++				fprintf(f, "\nauto-gain  etat=%d (-1 echec, 0 jamais lance, 1 en cours, 2 fait)\n",
++					nam->autoState.load(std::memory_order_acquire));
++
++				for (int i = 0; i < NUM_FAVS; i++)
++				{
++					fprintf(f, "  fav %-2d correction %+.2f dB  fichier %s\n", i + 1,
++						nam->autoGainMilli[i].load(std::memory_order_acquire) / 1000.0,
++						nam->favPaths[i][0] != '\0' ? nam->favPaths[i] : "(vide)");
++				}
++
++				fprintf(f, "\nfav actif  %d\n", nam->activeFav.load(std::memory_order_acquire));
++				fprintf(f, "libelle 31 \"%s\"\n", nam->hmiLbl[IDX_FAV_BROWSE]);
++				fprintf(f, "valeur  31 \"%s\"\n", nam->hmiVal[IDX_FAV_BROWSE]);
++
++				for (int i = 0; i < NUM_FAVS; i++)
++				{
++					char n[MAX_FAV_NAME];
++					nam->nom_favori(i + 1, n, sizeof(n));
++					fprintf(f, "fav %-2d nom=\"%s\" tape=\"%s\"\n", i + 1, n, nam->favNames[i]);
++				}
++
++				fclose(f);
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeScan:
++			{
++				static_cast<NAM::Plugin*>(instance)->scan_models();
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeSelect:
++			{
++				auto msg = static_cast<const LV2SelectMsg*>(data);
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				const int count = (int)nam->modelFiles.size();
++
++				if (count == 0)
++					return LV2_WORKER_SUCCESS;
++
++				int index;
++
++				if (msg->absolute >= 0)
++				{
++					index = msg->absolute;
++
++					if (index >= count)
++						index = count - 1;
++				}
++				else
++				{
++					index = nam->selectedIndex.load(std::memory_order_acquire) + msg->delta;
++
++					// la liste boucle : apres le dernier on revient au premier
++					while (index < 0)
++						index += count;
++
++					index %= count;
++				}
++
++				LV2LoadModelMsg load = { kWorkTypeLoad, {} };
++				const std::string& path = nam->modelFiles[index];
++
++				if (path.size() >= MAX_FILE_NAME)
++					return LV2_WORKER_SUCCESS;
++
++				memcpy(load.path, path.c_str(), path.size() + 1);
++
++				// on n'inscrit PAS encore le rang : il ne vaudra que si le
++				// chargement aboutit, sinon Current avancerait sans que le son change
++				nam->pendingIndex.store(index, std::memory_order_release);
++				nam->loadStatus.store(1, std::memory_order_release);
++				nam->activeFav.store(0, std::memory_order_release);	// on quitte les favoris
++
++				return work(instance, respond, handle, sizeof(load), &load);
++			}
++
++			case kWorkTypeFavSetPath:
++			{
++				auto msg = static_cast<const LV2FavPathMsg*>(data);
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
++					return LV2_WORKER_SUCCESS;
++
++				memcpy(nam->favPaths[msg->slot], msg->path, MAX_FILE_NAME);
++
++				int rang = -1;
++				for (size_t i = 0; i < nam->modelFiles.size(); i++)
++				{
++					if (nam->modelFiles[i] == nam->favPaths[msg->slot])
++					{
++						rang = (int)i;
++						break;
++					}
++				}
++				nam->favIndexes[msg->slot].store(rang, std::memory_order_release);
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeFavSetName:
++			{
++				auto msg = static_cast<const LV2FavNameMsg*>(data);
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
++					return LV2_WORKER_SUCCESS;
++
++				memcpy(nam->favNames[msg->slot], msg->name, MAX_FAV_NAME);
++				nam->favNames[msg->slot][MAX_FAV_NAME - 1] = '\0';
++
++				// forcer la reecriture de l'ecran avec le nouveau nom
++				nam->ecranFav.store(-1, std::memory_order_release);
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeFavStore:
++			{
++				auto msg = static_cast<const LV2FavMsg*>(data);
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
++					return LV2_WORKER_SUCCESS;
++
++				// Le rang vient du message : il a ete saisi au moment de l'appui,
++				// donc AVANT que ce meme appui ne charge le favori.
++				const int index = msg->index;
++				const std::string& src = (index >= 0 && index < (int)nam->modelFiles.size())
++					? nam->modelFiles[index] : nam->currentModelPath;
++
++				if (src.size() < MAX_FILE_NAME)
++				{
++					memcpy(nam->favPaths[msg->slot], src.c_str(), src.size() + 1);
++
++					// prevenir l'interface : le selecteur de ce favori doit
++					// afficher le nouveau nom
++					nam->favDirty.fetch_or(1u << msg->slot, std::memory_order_release);
++					nam->favIndexes[msg->slot].store(
++						(index >= 0 && index < (int)nam->modelFiles.size()) ? index : -1,
++						std::memory_order_release);
++				}
++
++				nam->activeFav.store(msg->slot + 1, std::memory_order_release);
++
++				return LV2_WORKER_SUCCESS;
++			}
++
++			case kWorkTypeFavLoad:
++			{
++				auto msg = static_cast<const LV2FavMsg*>(data);
++				auto nam = static_cast<NAM::Plugin*>(instance);
++
++				if (msg->slot < 0 || msg->slot >= NUM_FAVS)
++					return LV2_WORKER_SUCCESS;
++
++				const char* path = nam->favPaths[msg->slot];
++				const size_t len = strnlen(path, MAX_FILE_NAME);
++
++				if (len == 0 || len >= MAX_FILE_NAME)
++				{
++					// emplacement vide : on ne touche a rien
++					nam->loadStatus.store(-1, std::memory_order_release);
++
++					return LV2_WORKER_SUCCESS;
++				}
++
++				// retrouver son rang pour que Current reste coherent
++				int found = -1;
++				for (size_t i = 0; i < nam->modelFiles.size(); i++)
++				{
++					if (nam->modelFiles[i] == path)
++					{
++						found = (int)i;
++						break;
++					}
++				}
++
++				LV2LoadModelMsg load = { kWorkTypeLoad, {} };
++				memcpy(load.path, path, len + 1);
++
++				nam->pendingIndex.store(found, std::memory_order_release);
++				nam->activeFav.store(msg->slot + 1, std::memory_order_release);
++				nam->loadStatus.store(1, std::memory_order_release);
++
++				return work(instance, respond, handle, sizeof(load), &load);
++			}
++
+ 			case kWorkTypeFree:
+ 			{
+ 				auto msg = static_cast<const LV2FreeModelMsg*>(data);
+@@ -201,6 +632,21 @@ namespace NAM {
+ 			}
+ 		}
+ 
++		if (nam->currentModel != nullptr)
++		{
++			const int pending = nam->pendingIndex.load(std::memory_order_acquire);
++
++			if (pending >= 0)
++				nam->selectedIndex.store(pending, std::memory_order_release);
++
++			nam->loadStatus.store(2, std::memory_order_release);
++			nam->loadCount.fetch_add(1, std::memory_order_release);
++		}
++		else
++		{
++			nam->loadStatus.store(-1, std::memory_order_release);
++		}
++
+ 		// send reply
+ 		nam->schedule->schedule_work(nam->schedule->handle, sizeof(reply), &reply);
+ 
+@@ -228,6 +674,611 @@ namespace NAM {
+ 			loader.SetDefaultQualityScaleFactor(*(ports.quality_scale));
+ 		}
+ 
++		// ---- navigation dans les modeles du dossier ----------------------
++		// Le thread audio ne lit JAMAIS la liste : il envoie un rang au worker,
++		// qui resout le chemin et charge. Aucun verrou, aucune allocation ici.
++
++		if (!scanRequested)
++		{
++			// premier passage : demander le scan du dossier
++			LV2ScanMsg scan = { kWorkTypeScan };
++			schedule->schedule_work(schedule->handle, sizeof(scan), &scan);
++			scanRequested = true;
++		}
++
++		const float rescanNow = ports.rescan != nullptr ? *(ports.rescan) : 0.0f;
++		if (!rescanSeen)
++		{
++			rescanSeen = true;
++			prevRescan = rescanNow;
++		}
++		else if (rescanNow != prevRescan)
++		{
++			LV2ScanMsg scan = { kWorkTypeScan };
++			schedule->schedule_work(schedule->handle, sizeof(scan), &scan);
++			prevRescan = rescanNow;
++		}
++
++		// Next et Prev n'ont jamais agi qu'au front montant : c'est deja le bon
++		// comportement pour un momentane comme pour un clic du navigateur qui
++		// laisse le bouton a 1.
++		const float nextNow = ports.step_next != nullptr ? *(ports.step_next) : 0.0f;
++		if (nextNow > 0.5f && prevStepNext <= 0.5f)
++		{
++			LV2SelectMsg sel = { kWorkTypeSelect, -1, 1 };
++			schedule->schedule_work(schedule->handle, sizeof(sel), &sel);
++		}
++		prevStepNext = nextNow;
++
++		const float prevNow = ports.step_prev != nullptr ? *(ports.step_prev) : 0.0f;
++		if (prevNow > 0.5f && prevStepPrev <= 0.5f)
++		{
++			LV2SelectMsg sel = { kWorkTypeSelect, -1, -1 };
++			schedule->schedule_work(schedule->handle, sizeof(sel), &sel);
++		}
++		prevStepPrev = prevNow;
++
++		const float indexNow = ports.model_index != nullptr ? *(ports.model_index) : 0.0f;
++		if (!indexPortSeen)
++		{
++			// premier passage : on prend la valeur telle quelle sans rien charger,
++			// sinon un port a zero ecraserait le modele restaure de l'etat
++			indexPortSeen = true;
++			prevIndexPort = indexNow;
++		}
++		else if (indexNow != prevIndexPort)
++		{
++			LV2SelectMsg sel = { kWorkTypeSelect, (int32_t)indexNow, 0 };
++			schedule->schedule_work(schedule->handle, sizeof(sel), &sel);
++			prevIndexPort = indexNow;
++		}
++
++		if (ports.model_count != nullptr)
++			*(ports.model_count) = (float)modelCount.load(std::memory_order_acquire);
++
++		if (ports.current_index != nullptr)
++			*(ports.current_index) = (float)selectedIndex.load(std::memory_order_acquire);
++
++		if (ports.load_status != nullptr)
++			*(ports.load_status) = (float)loadStatus.load(std::memory_order_acquire);
++
++		// ---- parcours sans charger, puis validation --------------------
++		const int count = modelCount.load(std::memory_order_acquire);
++
++		const float browseNow = ports.browse != nullptr ? *(ports.browse) : 0.0f;
++		if (browseNow > 0.5f && prevBrowse <= 0.5f && count > 0)
++		{
++			int b = browseIndex.load(std::memory_order_acquire) + 1;
++
++			if (b >= count)
++				b = 0;
++
++			browseIndex.store(b, std::memory_order_release);
++		}
++		prevBrowse = browseNow;
++
++		const float actionNow = ports.action != nullptr ? *(ports.action) : 0.0f;
++		if (actionNow > 0.5f && prevAction <= 0.5f && count > 0)
++		{
++			LV2SelectMsg sel = { kWorkTypeSelect, browseIndex.load(std::memory_order_acquire), 0 };
++			schedule->schedule_work(schedule->handle, sizeof(sel), &sel);
++		}
++		prevAction = actionNow;
++
++		// ---- les huit favoris : court = charger, long = ranger ----------
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (ports.fav[i] == nullptr)
++				continue;
++
++			const float now = *(ports.fav[i]);
++
++			if (!favSeen[i])
++			{
++				// premier passage : on note la valeur sans rien declencher
++				favSeen[i] = true;
++				prevFav[i] = now;
++				continue;
++			}
++
++			if (now != prevFav[i])
++			{
++				const bool relachement = (now <= 0.5f);
++
++				if (relachement && favHeldSamples[i] >= longPressSamples
++					&& favHeldSamples[i] <= longPressMaxSamples)
++				{
++					// APPUI LONG RELACHE : on range ce qui jouait avant l'appui.
++					// Le rangement attend le relachement, et refuse au-dela du
++					// plafond : un bouton laisse sur ON dans le navigateur ne
++					// peut donc plus ecraser un favori tout seul.
++					LV2FavMsg msg = { kWorkTypeFavStore, i,
++						favPressIndex[i], favPressGain[i] };
++					schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++					storeCount.fetch_add(1, std::memory_order_release);
++				}
++				else if (!(relachement && favHeldSamples[i] < longPressMaxSamples)
++					&& activeFav.load(std::memory_order_acquire) != i + 1)
++				{
++					// Charge ce favori -- sauf au relachement d'un switch
++					// momentane, et sauf s'il joue deja : recharger un modele
++					// pour rien coute tres cher en CPU.
++					favPressIndex[i] = selectedIndex.load(std::memory_order_acquire);
++					favPressGain[i] = appliedGainMilli.load(std::memory_order_acquire);
++
++					LV2FavMsg msg = { kWorkTypeFavLoad, i, -1, 0 };
++					schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				}
++
++				favHeldSamples[i] = 0;
++			}
++			else if (now > 0.5f && favHeldSamples[i] <= longPressMaxSamples)
++			{
++				favHeldSamples[i] += n_samples;
++			}
++
++			prevFav[i] = now;
++		}
++
++		if (ports.browse_index != nullptr)
++			*(ports.browse_index) = (float)browseIndex.load(std::memory_order_acquire);
++
++		// ---- gain du favori actif --------------------------------------
++		// Chaque favori a MAINTENANT son propre port de gain : l'hote le
++		// sauvegarde avec la pedalboard, et le bouton montre toujours la vraie
++		// valeur. Plus de divergence possible entre l'affichage et le son.
++		{
++			const int fav = activeFav.load(std::memory_order_acquire);
++			float g = 0.0f;
++
++			if (fav >= 1 && fav <= NUM_FAVS)
++			{
++				if (ports.favGain[fav - 1] != nullptr)
++					g = *(ports.favGain[fav - 1]);
++
++				// La correction n'est plus ajoutee ici : depuis qu'on sait la
++				// DEMANDER a l'hote, elle vit dans le bouton lui-meme. Sinon
++				// elle compterait deux fois.
++			}
++			else if (ports.fav_gain != nullptr)
++				g = *(ports.fav_gain);	// hors favori : le gain general
++
++			appliedGainMilli.store((int)(g * 1000.0f), std::memory_order_release);
++		}
++
++		// ---- parcours des seuls favoris --------------------------------
++		const float favBrowseNow = ports.fav_browse != nullptr ? *(ports.fav_browse) : 0.0f;
++
++		if (favBrowseNow > 0.5f && favBrowseHeld < longPressMaxSamples)
++			favBrowseHeld += n_samples;
++
++		if (!favBrowseSeen)
++		{
++			favBrowseSeen = true;
++			prevFavBrowse = favBrowseNow;
++		}
++		else if (favBrowseNow != prevFavBrowse)
++		{
++			const bool relachement = (favBrowseNow <= 0.5f);
++			const bool piedBref = relachement && favBrowseHeld < longPressMaxSamples;
++
++			prevFavBrowse = favBrowseNow;
++
++			if (!relachement)
++				favBrowseHeld = 0;
++
++			// Le drapeau Momentary du host arrive VIDE sur cette machine : on
++			// reconnait donc l'appui du pied a la DUREE de l'etat haut. Un
++			// relachement apres un etat haut bref suit un appui qui a deja agi,
++			// on l'ignore -- sinon deux crans et deux chargements par pression.
++			// Un bouton du navigateur reste haut bien plus longtemps : le
++			// decocher agit normalement.
++			if (!piedBref)
++			{
++
++			// aller au favori NON VIDE suivant, en repartant du debut au bout
++			const int depart = activeFav.load(std::memory_order_acquire);
++
++			int longueur = ports.cycle_count != nullptr ? (int)*(ports.cycle_count) : NUM_FAVS;
++			if (longueur < 1) longueur = 1;
++			if (longueur > NUM_FAVS) longueur = NUM_FAVS;
++
++			bool trouve = false;
++
++			for (int pas = 1; pas <= longueur; pas++)
++			{
++				const int cible = ((depart - 1 + pas) % longueur + longueur) % longueur;
++
++				if (favPaths[cible][0] == '\0')
++					continue;
++
++				LV2FavMsg msg = { kWorkTypeFavLoad, cible, -1, 0 };
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				trouve = true;
++				break;
++			}
++
++			if (!trouve)
++			{
++				// aucun favori rempli dans le cycle : le silence complet laissait
++				// croire a une panne, on le signale par le port d'etat
++				loadStatus.store(-1, std::memory_order_release);
++			}
++			}
++		}
++
++		// ---- annoncer a l'interface les favoris ranges au pied ----------
++		{
++			unsigned bits = favDirty.exchange(0, std::memory_order_acquire);
++
++			for (int i = 0; i < NUM_FAVS && bits != 0; i++)
++			{
++				if (bits & (1u << i))
++					write_fav_path(i);
++			}
++
++			unsigned nbits = favNameDirty.exchange(0, std::memory_order_acquire);
++
++			for (int i = 0; i < NUM_FAVS && nbits != 0; i++)
++			{
++				if (nbits & (1u << i))
++					write_fav_name(i);
++			}
++
++			if (bits != 0 || nbits != 0)
++			{
++				// un nom ou un chemin a change : vider le cache d'affichage,
++				// sinon l'ecran garderait l'ancien libelle indefiniment
++				for (int k = 0; k < NUM_PORTS_TOTAL; k++)
++				{
++					hmiLbl[k][0] = '\0';
++					hmiVal[k][0] = '\0';
++				}
++			}
++		}
++
++		// ---- enregistrement depuis l'interface web ---------------------
++		// L'interface web ecrit 1 puis 0 dans le port entre deux cycles audio :
++		// le front montant n'est jamais vu ici. On declenche donc sur tout
++		// CHANGEMENT de valeur, montant ou descendant.
++		const float storeNow = ports.store != nullptr ? *(ports.store) : 0.0f;
++		if (!storeSeen)
++		{
++			storeSeen = true;
++			prevStore = storeNow;
++		}
++		else if (storeNow != prevStore)
++		{
++			const int slot = ports.store_slot != nullptr ? (int)*(ports.store_slot) - 1 : -1;
++
++			if (slot >= 0 && slot < NUM_FAVS)
++			{
++				LV2FavMsg msg = { kWorkTypeFavStore, slot,
++					selectedIndex.load(std::memory_order_acquire),
++					appliedGainMilli.load(std::memory_order_acquire) };
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				storeCount.fetch_add(1, std::memory_order_release);
++			}
++
++			prevStore = storeNow;
++		}
++
++		{
++			// un choix de nom qui change doit repeindre l'ecran
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				const float v = ports.favNamePort[i] != nullptr ? *(ports.favNamePort[i]) : 0.0f;
++
++				if (v != prevFavName[i])
++				{
++					prevFavName[i] = v;
++					hmiLbl[IDX_FAV_FIRST + i][0] = '\0';
++					hmiVal[IDX_FAV_FIRST + i][0] = '\0';
++					hmiLbl[IDX_FAV_BROWSE][0] = '\0';
++					ecranFav.store(-1, std::memory_order_release);
++				}
++			}
++
++			const int fav = activeFav.load(std::memory_order_acquire);
++			const int aFaire = ecranFav.load(std::memory_order_acquire);
++
++			hmiPos += n_samples;
++			ecranCompteur += n_samples;
++			traceCompteur += n_samples;
++
++			if (traceCompteur >= tracePeriode)
++			{
++				traceCompteur = 0;
++				LV2ScanMsg t = { kWorkTypeTrace };
++				schedule->schedule_work(schedule->handle, sizeof(t), &t);
++			}
++
++			// Deux raisons d'ecrire : le favori a change, ou le temps est venu.
++			// Le rafraichissement periodique est indispensable -- le firmware
++			// redessine ON/OFF a chaque changement de valeur du port et efface
++			// notre libelle. 4 envois/s, tres en dessous du budget de 25.
++			if (aFaire != fav || ecranCompteur >= ecranPeriode || ecranForce)
++			{
++				// le plein ecran n'apparait QUE sur un vrai changement de favori
++				ecrire_ecran(fav, aFaire != fav && !ecranForce);
++				ecranForce = false;
++				ecranFav.store(fav, std::memory_order_release);
++				ecranCompteur = 0;
++			}
++		}
++
++		if (ports.active_fav != nullptr)
++			*(ports.active_fav) = (float)activeFav.load(std::memory_order_acquire);
++
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (ports.favIndex[i] != nullptr)
++				*(ports.favIndex[i]) = (float)favIndexes[i].load(std::memory_order_acquire);
++		}
++
++		// ---- un bouton de rangement par favori --------------------------
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (ports.favStore[i] == nullptr)
++				continue;
++
++			const float v = *(ports.favStore[i]);
++
++			if (!favStoreSeen[i])
++			{
++				favStoreSeen[i] = true;
++				prevFavStore[i] = v;
++				continue;
++			}
++
++			// Tout changement range, montant ou descendant : un clic du
++			// navigateur peut arriver dans les deux sens, et le rangement est
++			// idempotent -- le refaire deux fois ne coute rien.
++			if (v != prevFavStore[i])
++			{
++				prevFavStore[i] = v;
++
++				LV2FavMsg msg = { kWorkTypeFavStore, i,
++					selectedIndex.load(std::memory_order_acquire),
++					appliedGainMilli.load(std::memory_order_acquire) };
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				storeCount.fetch_add(1, std::memory_order_release);
++			}
++		}
++
++		// ---- selection du favori par tension ----------------------------
++		// La plage 0-10 V est decoupee en NUM_FAVS bandes egales. On ne charge
++		// qu'au CHANGEMENT de bande, avec une marge pour qu'une tension posee
++		// sur une frontiere ne fasse pas osciller le chargement.
++		if (ports.cv_select != nullptr && n_samples > 0)
++		{
++			// LIRE LE PREMIER ECHANTILLON, jamais le dernier : quand rien n'est
++			// branche sur l'entree CV, l'hote peut n'allouer qu'une seule valeur.
++			// Lire l'indice n_samples-1 sortait alors du tampon -- et rebrancher
++			// les ports, ce que fait le deplacement d'un bloc, deplace ces
++			// tampons. C'est une lecture hors limites, donc un plantage.
++			const float volts = ports.cv_select[0];
++			const float largeur = 10.0f / (float)NUM_FAVS;
++
++			int bande = (int)(volts / largeur);
++
++			if (bande < 0) bande = 0;
++			if (bande >= NUM_FAVS) bande = NUM_FAVS - 1;
++
++			// marge : il faut depasser le dixieme de bande pour basculer
++			const float centre = ((float)bande + 0.5f) * largeur;
++			const float ecart = volts > centre ? volts - centre : centre - volts;
++
++			if (bande != cvBande && ecart < largeur * 0.4f)
++			{
++				cvBande = bande;
++
++				if (favPaths[bande][0] != '\0')
++				{
++					LV2FavMsg msg = { kWorkTypeFavLoad, bande, -1, 0 };
++					schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				}
++			}
++		}
++
++		// ---- saisie d'un nom depuis l'interface web ---------------------
++		// UNE SEULE valeur porte tout : compteur x 4096 + emplacement x 256 +
++		// caractere. Deux ports separes ne marchaient que pour le favori 1 --
++		// rien ne garantit que l'emplacement arrive avant le declencheur, et
++		// s'il arrive apres, la frappe part vers l'emplacement precedent.
++		// Le compteur sert a distinguer deux frappes identiques de suite.
++		vieEchantillons += n_samples;
++
++		const float webNow = ports.web_char != nullptr ? *(ports.web_char) : 0.0f;
++
++		if (!webCharSeen)
++		{
++			webCharSeen = true;
++			prevWebChar = webNow;
++		}
++		else if (webNow != prevWebChar)
++		{
++			prevWebChar = webNow;
++			webVus++;	// compte TOUT changement, meme ignore : distingue
++					// "le navigateur n'ecrit pas" de "le plugin ignore"
++
++			// Au chargement d'une pedalboard l'hote REINSTALLE les valeurs
++			// sauvegardees : sans ce delai, la valeur restauree passerait pour
++			// une frappe et ajouterait un caractere parasite.
++			if (vieEchantillons > (uint64_t)(sampleRate * 2.0))
++			{
++				const int paquet = (int)(webNow + 0.5f);
++				const int slot = ((paquet >> 8) & 0x0F) - 1;
++				const int code = paquet & 0xFF;
++
++				if (slot >= 0 && slot < NUM_FAVS)
++				{
++					char* nom = favNames[slot];
++					const size_t len = strnlen(nom, MAX_FAV_NAME);
++
++					if (code == 1)
++					{
++						nom[0] = '\0';
++					}
++					else if (code == 8)
++					{
++						if (len > 0) nom[len - 1] = '\0';
++					}
++					else if (code >= 32 && code < 127 && len < MAX_FAV_NAME - 1)
++					{
++						nom[len] = (char)code;
++						nom[len + 1] = '\0';
++					}
++
++					// redessiner l'ecran SANS plein ecran : sinon chaque lettre
++					// tapee ouvrait un popup
++					for (int k = 0; k < NUM_PORTS_TOTAL; k++)
++					{
++						hmiLbl[k][0] = '\0';
++						hmiVal[k][0] = '\0';
++					}
++					ecranForce = true;
++				}
++			}
++		}
++
++		// ---- lancement de la mesure automatique -------------------------
++		const float autoNow = ports.auto_gain != nullptr ? *(ports.auto_gain) : 0.0f;
++
++		if (!autoGainSeen)
++		{
++			autoGainSeen = true;
++			prevAutoGain = autoNow;
++		}
++		else if (autoNow != prevAutoGain)
++		{
++			prevAutoGain = autoNow;
++
++			LV2ScanMsg m = { kWorkTypeAutoGain };
++			schedule->schedule_work(schedule->handle, sizeof(m), &m);
++		}
++
++		if (ports.auto_state != nullptr)
++			*(ports.auto_state) = (float)autoState.load(std::memory_order_acquire);
++
++		if (ports.auto_offset != nullptr)
++		{
++			const int f = activeFav.load(std::memory_order_acquire);
++
++			*(ports.auto_offset) = (f >= 1 && f <= NUM_FAVS)
++				? autoGainMilli[f - 1].load(std::memory_order_acquire) / 1000.0f
++				: 0.0f;
++		}
++
++		// ---- appliquer ou annuler les gains mesures ---------------------
++		if (appliquerDemande.exchange(false, std::memory_order_acquire))
++		{
++			for (int i = 0; i < NUM_FAVS; i++)
++				gainAvant[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
++
++			gainSauve = true;
++			ecrire_gains(false);
++		}
++
++		const float applyNow = ports.auto_apply != nullptr ? *(ports.auto_apply) : 0.0f;
++
++		if (!autoApplySeen) { autoApplySeen = true; prevAutoApply = applyNow; }
++		else if (applyNow != prevAutoApply)
++		{
++			prevAutoApply = applyNow;
++
++			// garder les valeurs d'avant pour pouvoir revenir en arriere
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				gainAvant[i] = ports.favGain[i] != nullptr ? *(ports.favGain[i]) : 0.0f;
++			}
++
++			gainSauve = true;
++			ecrire_gains(false);
++		}
++
++		const float undoNow = ports.auto_undo != nullptr ? *(ports.auto_undo) : 0.0f;
++
++		if (!autoUndoSeen) { autoUndoSeen = true; prevAutoUndo = undoNow; }
++		else if (undoNow != prevAutoUndo)
++		{
++			prevAutoUndo = undoNow;
++			ecrire_gains(true);
++		}
++
++		// ---- canal de retour : le nom remonte vers l'interface ----------
++		// Sans lui, un nom tape est connu du plugin mais le champ du navigateur
++		// repart vide au rechargement. On fait tourner un favori par seconde :
++		// name_slot dit de qui il s'agit, n1..n7 portent ses caracteres, et
++		// auto_db_slot la correction mesuree pour le meme favori.
++		rotationCompteur += n_samples;
++
++		if (rotationCompteur >= (uint32_t)sampleRate)
++		{
++			rotationCompteur = 0;
++			rotationSlot = (rotationSlot + 1) % NUM_FAVS;
++		}
++
++		if (ports.name_slot != nullptr)
++			*(ports.name_slot) = (float)(rotationSlot + 1);
++
++		{
++			char nom[MAX_FAV_NAME];
++			nom_favori(rotationSlot + 1, nom, sizeof(nom));
++
++			for (int k = 0; k < 7; k++)
++			{
++				if (ports.nameChar[k] == nullptr)
++					continue;
++
++				*(ports.nameChar[k]) = (k < (int)strnlen(nom, 7))
++					? (float)(unsigned char)nom[k] : 0.0f;
++			}
++		}
++
++		if (ports.auto_db_slot != nullptr)
++			*(ports.auto_db_slot) =
++				autoGainMilli[rotationSlot].load(std::memory_order_acquire) / 1000.0f;
++
++		if (ports.kx_state != nullptr)
++			*(ports.kx_state) = (float)kxEtat;
++
++		if (ports.hmi_state != nullptr)
++		{
++			// Un seul nombre qui dit tout : unites = etat, dizaines et au-dela
++			// = capacites annoncees par le firmware pour Fav Next.
++			//   etat : 0 pas de HMI, 1 HMI sans assignation, 2 assigne,
++			//          3 assigne + popup disponible
++			//   caps : 1 LED, 2 libelle, 4 valeur, 8 unite, 16 indicateur
++			// Exemple : 36 = capacites 3 (LED+libelle) et etat 6... non :
++			// on lit 2 + 10 x caps. 62 = caps 6 (libelle+valeur), etat 2.
++			int etat = 0;
++			int caps = 0;
++
++			if (hmi != nullptr)
++			{
++				etat = 1;
++
++				if (hmiAddr[IDX_FAV_BROWSE] != nullptr)
++				{
++					etat = 2;
++					caps = hmiCaps[IDX_FAV_BROWSE];
++
++					if ((hmi->size == 0 || hmi->size >= LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE)
++						&& hmi->popup_message != nullptr)
++						etat = 3;
++				}
++			}
++
++			*(ports.hmi_state) = (float)(etat + 10 * caps);
++		}
++
++		if (ports.store_count != nullptr)
++			*(ports.store_count) = (float)storeCount.load(std::memory_order_acquire);
++
++		if (ports.applied_gain != nullptr)
++			*(ports.applied_gain) = appliedGainMilli.load(std::memory_order_acquire) / 1000.0f;
++
+ 		LV2_ATOM_SEQUENCE_FOREACH(ports.control, event)
+ 		{
+ 			if (event->body.type == uris.atom_Object)
+@@ -237,6 +1288,26 @@ namespace NAM {
+ 				{
+ 					write_current_path();
+ 				}
++				else if (obj->body.otype == uris.patch_Put)
++				{
++					// UN PUT POUSSE UN OBJET ENTIER, propriete par propriete,
++					// dans un corps. C'est la forme qu'un hote emploie pour
++					// transmettre un etat complet -- un plugin qui ne lit que
++					// les Set jette ces valeurs en silence.
++					putVus.fetch_add(1, std::memory_order_release);
++
++					const LV2_Atom_Object* corps = NULL;
++
++					lv2_atom_object_get(obj, uris.patch_body, &corps, 0);
++
++					if (corps != nullptr && corps->atom.type == uris.atom_Object)
++					{
++						LV2_ATOM_OBJECT_FOREACH(corps, prop)
++						{
++							appliquer_parametre(prop->key, &prop->value);
++						}
++					}
++				}
+ 				else if (obj->body.otype == uris.patch_Set)
+ 				{
+ 					const LV2_Atom* property = NULL;
+@@ -247,14 +1318,53 @@ namespace NAM {
+ 					                    uris.patch_value, &file_path,
+ 					                    0);
+ 
++					// un nom libre : meme message, mais valeur de type chaine
++					if (property && property->type == uris.atom_URID &&
++						file_path && file_path->type == uris.atom_String &&
++						file_path->size > 0 && file_path->size <= MAX_FAV_NAME)
++					{
++						const LV2_URID cible = ((const LV2_Atom_URID*)property)->body;
++
++						for (int i = 0; i < NUM_FAVS; i++)
++						{
++							if (cible != uris.fav_Name[i])
++								continue;
++
++							LV2FavNameMsg msg = { kWorkTypeFavSetName, i, {} };
++							memcpy(msg.name, file_path + 1, file_path->size);
++							msg.name[MAX_FAV_NAME - 1] = '\0';
++							schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++							break;
++						}
++					}
++
+ 					if (property && property->type == uris.atom_URID &&
+-						((const LV2_Atom_URID*)property)->body == uris.model_Path &&
+ 						file_path && file_path->type == uris.atom_Path &&
+ 						file_path->size > 0 && file_path->size < MAX_FILE_NAME)
+ 					{
+-						LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
+-						memcpy(msg.path, file_path + 1, file_path->size);
+-						schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++						const LV2_URID cible = ((const LV2_Atom_URID*)property)->body;
++
++						if (cible == uris.model_Path)
++						{
++							LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
++							memcpy(msg.path, file_path + 1, file_path->size);
++							pendingIndex.store(-1, std::memory_order_release);
++							schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++						}
++						else
++						{
++							// l'un des huit favoris, choisi dans l'interface web
++							for (int i = 0; i < NUM_FAVS; i++)
++							{
++								if (cible != uris.fav_Path[i])
++									continue;
++
++								LV2FavPathMsg msg = { kWorkTypeFavSetPath, i, {} };
++								memcpy(msg.path, file_path + 1, file_path->size);
++								schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++								break;
++							}
++						}
+ 					}
+ 				}
+ 			}
+@@ -348,7 +1458,10 @@ namespace NAM {
+ 		}
+ 
+ 		// Convert output level from db
+-		float desiredOutputLevel = powf(10, (*(ports.output_level) + modelLoudnessAdjustmentDB) * 0.05f);
++		const float favGainDB = appliedGainMilli.load(std::memory_order_acquire) / 1000.0f;
++
++		float desiredOutputLevel = powf(10,
++			(*(ports.output_level) + modelLoudnessAdjustmentDB + favGainDB) * 0.05f);
+ 
+ 		if (fabs(desiredOutputLevel - outputLevel) > SMOOTH_EPSILON)
+ 		{
+@@ -419,6 +1532,20 @@ namespace NAM {
+ 
+ 		if (!nam->currentModel)
+ 		{
++			// pas de modele, mais les favoris meritent d'etre gardes
++			std::string joined;
++
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				joined.append(nam->favPaths[i], strnlen(nam->favPaths[i], MAX_FILE_NAME));
++				joined += '\t';
++				joined.append(nam->favNames[i], strnlen(nam->favNames[i], MAX_FAV_NAME));
++				joined += '\n';
++			}
++
++			store(handle, nam->uris.favs_String, joined.c_str(), joined.size() + 1,
++				nam->uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
++
+ 			return LV2_STATE_SUCCESS;
+ 		}
+ 
+@@ -437,6 +1564,24 @@ namespace NAM {
+ 		store(handle, nam->uris.model_Path, apath, strlen(apath) + 1, nam->uris.atom_Path,
+ 			LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+ 
++		// Les huit favoris, sinon ils disparaitraient au rechargement de la
++		// pedalboard. Un seul champ texte, les chemins separes par des sauts
++		// de ligne : un emplacement vide reste une ligne vide.
++		{
++			std::string joined;
++
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				joined.append(nam->favPaths[i], strnlen(nam->favPaths[i], MAX_FILE_NAME));
++				joined += '\t';
++				joined.append(nam->favNames[i], strnlen(nam->favNames[i], MAX_FAV_NAME));
++				joined += '\n';
++			}
++
++			store(handle, nam->uris.favs_String, joined.c_str(), joined.size() + 1,
++				nam->uris.atom_String, LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
++		}
++
+ 		LV2_State_Free_Path* free_path = (LV2_State_Free_Path *)lv2_features_data(features, LV2_STATE__freePath);
+ 
+ 		if (free_path != nullptr)
+@@ -458,6 +1603,62 @@ namespace NAM {
+ 	{
+ 		auto nam = static_cast<NAM::Plugin*>(instance);
+ 
++		// Reprendre les favoris avant le modele
++		{
++			size_t   fsize = 0;
++			uint32_t ftype = 0;
++			uint32_t fflags = 0;
++			const void* favs = retrieve(handle, nam->uris.favs_String, &fsize, &ftype, &fflags);
++
++			if (favs != nullptr && ftype == nam->uris.atom_String && fsize > 0)
++			{
++				std::string joined(static_cast<const char*>(favs), fsize - 1);
++				size_t start = 0;
++
++				for (int i = 0; i < NUM_FAVS; i++)
++				{
++					const size_t cut = joined.find('\n', start);
++
++					if (cut == std::string::npos)
++						break;
++
++					std::string line = joined.substr(start, cut - start);
++
++					// apres la tabulation : le NOM libre. Les etats les plus
++					// anciens y rangeaient un gain (devenu un port) : un contenu
++					// numerique pur est donc ignore plutot que pris pour un nom.
++					const size_t tab = line.find('\t');
++					std::string suite;
++					// apres la tabulation : le nom tape
++
++					if (tab != std::string::npos)
++					{
++						suite = line.substr(tab + 1);
++						line.resize(tab);
++
++						bool numerique = !suite.empty();
++						for (size_t k = 0; k < suite.size(); k++)
++						{
++							if (!isdigit((unsigned char)suite[k]) && suite[k] != '.'
++								&& suite[k] != '-' && suite[k] != '+')
++							{
++								numerique = false;
++								break;
++							}
++						}
++
++						if (!numerique && suite.size() < MAX_FAV_NAME)
++							memcpy(nam->favNames[i], suite.c_str(), suite.size() + 1);
++					}
++
++					if (line.size() < MAX_FILE_NAME)
++						memcpy(nam->favPaths[i], line.c_str(), line.size() + 1);
++
++					start = cut + 1;
++				}
++			}
++		}
++
+ 		// Get model_Path from state
+ 		size_t      size     = 0;
+ 		uint32_t    type     = 0;
+@@ -527,6 +1728,566 @@ namespace NAM {
+ 		return result;
+ 	}
+ 
++	// Annonce a l'hote le chemin d'un favori : c'est ce qui fait apparaitre le
++	// NOM dans le selecteur de l'interface web apres un rangement au pied.
++	// Le host previent quand l'utilisateur assigne un port a un actuateur, et
++	// donne le jeton a employer pour ecrire sur cet afficheur. Sans ces deux
++	// fonctions declarees en extensionData, rien n'arrive jamais.
++	// Trois regles reprises du looper, chacune payee par un defaut observe :
++	//  1. n'envoyer que ce qui a CHANGE, pour rester sous le budget d'ecran ;
++	//  2. respecter les capacites annoncees a l'assignation ;
++	//  3. se TAIRE pendant un plein ecran -- un libelle ecrit apres un popup
++	//     repeint la page et efface le message.
++	void Plugin::hmi_label(int port, const char* txt)
++	{
++		if (HMI_DESACTIVE) return;
++
++		if (popup_en_cours()) return;
++		if (hmi == nullptr || port < 0 || port >= NUM_PORTS_TOTAL) return;
++		if (hmiAddr[port] == nullptr || hmi->set_label == nullptr) return;
++		if (!(hmiCaps[port] & LV2_HMI_AddressingCapability_Label)) return;
++		if (strncmp(hmiLbl[port], txt, sizeof(hmiLbl[0]) - 1) == 0) return;
++
++		strncpy(hmiLbl[port], txt, sizeof(hmiLbl[0]) - 1);
++		hmiLbl[port][sizeof(hmiLbl[0]) - 1] = '\0';
++		hmi->set_label(hmi->handle, hmiAddr[port], hmiLbl[port]);
++	}
++
++	void Plugin::hmi_value(int port, const char* txt)
++	{
++		if (HMI_DESACTIVE) return;
++
++		if (popup_en_cours()) return;
++		if (hmi == nullptr || port < 0 || port >= NUM_PORTS_TOTAL) return;
++		if (hmiAddr[port] == nullptr || hmi->set_value == nullptr) return;
++		if (!(hmiCaps[port] & LV2_HMI_AddressingCapability_Value)) return;
++		if (strncmp(hmiVal[port], txt, sizeof(hmiVal[0]) - 1) == 0) return;
++
++		strncpy(hmiVal[port], txt, sizeof(hmiVal[0]) - 1);
++		hmiVal[port][sizeof(hmiVal[0]) - 1] = '\0';
++		hmi->set_value(hmi->handle, hmiAddr[port], hmiVal[port]);
++	}
++
++	void Plugin::hmi_popup(int port, const char* titre, const char* message)
++	{
++		if (HMI_DESACTIVE) return;
++
++		if (hmi == nullptr || hmi->popup_message == nullptr) return;
++
++		// Le champ size dit ce que le host fournit vraiment, mais CERTAINS
++		// HOSTS LE LAISSENT A ZERO : ne refuser que s'il est renseigne ET trop
++		// petit. Mon test precedent (size >= ...) bloquait tout dans ce cas.
++		if (hmi->size != 0 && hmi->size < LV2_HMI_WIDGETCONTROL_SIZE_POPUP_MESSAGE)
++			return;
++
++		// le titre part EN LIBELLE d'abord : ecrit apres, il effacerait le popup
++		popupAt = 0;
++		hmi_label(port, titre);
++		popupAt = hmiPos;
++
++		if (port >= 0 && port < NUM_PORTS_TOTAL && hmiAddr[port] != nullptr)
++		{
++			hmi->popup_message(hmi->handle, hmiAddr[port],
++				LV2_HMI_Popup_Style_Inverted, titre, message);
++			return;
++		}
++
++		// repli : n'importe quel port assigne fait l'affaire pour un plein ecran
++		for (int k = 0; k < NUM_PORTS_TOTAL; k++)
++		{
++			if (hmiAddr[k] != nullptr)
++			{
++				hmi->popup_message(hmi->handle, hmiAddr[k],
++					LV2_HMI_Popup_Style_Inverted, titre, message);
++				return;
++			}
++		}
++	}
++
++	// Applique un couple propriete/valeur, qu'il vienne d'un patch:Set (une
++	// propriete a la fois) ou d'un patch:Put (un objet entier d'un coup).
++	// log2 approche, ecrit ici parce que log(), log10() et exp() de la glibc
++	// sont marques GLIBC_2.29 alors que la machine plafonne a 2.27. Meme piege
++	// que pow@GLIBC_2.29 sur l'accordeur. Precision largement suffisante pour
++	// un gain exprime en decibels.
++	static float nam_log2f(float x)
++	{
++		if (x <= 0.0f)
++			return -127.0f;
++
++		union { float f; uint32_t i; } u;
++		u.f = x;
++
++		const float e = (float)((int)((u.i >> 23) & 0xFF) - 127);
++
++		u.i = (u.i & 0x007FFFFFu) | 0x3F800000u;	// mantisse ramenee dans [1,2)
++		const float m = u.f;
++
++		const float p = -1.7417939f + (2.8212026f + (-1.4699568f
++			+ (0.44717955f - 0.056570851f * m) * m) * m) * m;
++
++		return e + p;
++	}
++
++	static float nam_log10f(float x)
++	{
++		return nam_log2f(x) * 0.30102999566f;
++	}
++
++	// Mesure le niveau de sortie de chaque favori et en deduit une correction,
++	// pour qu'ils sonnent tous au meme volume.
++	//
++	// Tourne dans le thread du WORKER : on charge un modele a part, on lui fait
++	// traiter un signal d'essai identique pour tous, on mesure l'energie, on
++	// libere. Le modele qui joue n'est jamais touche et le son continue.
++	//
++	// Le signal d'essai est un bruit deterministe (generateur a graine fixe) :
++	// deux mesures du meme modele donnent donc exactement le meme resultat.
++	void Plugin::mesurer_niveaux()
++	{
++		static constexpr int N_ESSAI = 8192;	// environ 170 ms a 48 kHz
++		static constexpr int N_BLOC = 256;
++
++		autoState.store(1, std::memory_order_release);
++
++		float entree[N_BLOC];
++		float sortie[N_BLOC];
++		float niveaux[NUM_FAVS];
++		bool mesure[NUM_FAVS] = {};
++		int combien = 0;
++
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			niveaux[i] = 0.0f;
++
++			if (favPaths[i][0] == '\0')
++				continue;
++
++			auto modele = loader.CreateFromFile(favPaths[i]);
++
++			if (modele == nullptr)
++				continue;
++
++			// INDISPENSABLE : un modele frais ne sait pas quelle taille de bloc
++			// on va lui donner, et ses etats internes sont vides. Sans ces deux
++			// appels, le traitement ne donne rien d'exploitable -- c'est ce qui
++			// rendait la mesure muette.
++			modele->SetMaxAudioBufferSize(N_BLOC);
++			modele->Prewarm();
++
++			// niveau recommande par le modele, comme dans le traitement normal
++			const float entreeDB = modele->GetRecommendedInputDBAdjustment();
++			const float sortieDB = modele->GetRecommendedOutputDBAdjustment();
++			const float gainEntree = powf(10.0f, entreeDB * 0.05f);
++			const float gainSortie = powf(10.0f, sortieDB * 0.05f);
++
++			uint32_t graine = 12345u;
++			double somme = 0.0;
++			int comptes = 0;
++
++			for (int fait = 0; fait < N_ESSAI; fait += N_BLOC)
++			{
++				for (int k = 0; k < N_BLOC; k++)
++				{
++					// generateur congruentiel : identique a chaque appel
++					graine = graine * 1103515245u + 12345u;
++					const float bruit = ((float)((graine >> 9) & 0xFFFF) / 32768.0f) - 1.0f;
++
++					entree[k] = bruit * 0.25f * gainEntree;
++				}
++
++				modele->Process(entree, sortie, N_BLOC);
++
++				// les premiers blocs servent a remplir les etats internes
++				if (fait >= N_BLOC * 4)
++				{
++					for (int k = 0; k < N_BLOC; k++)
++					{
++						const float v = sortie[k] * gainSortie;
++						somme += (double)v * (double)v;
++						comptes++;
++					}
++				}
++			}
++
++			modele = nullptr;	// libere le modele d'essai
++
++			if (comptes > 0 && somme > 0.0)
++			{
++				niveaux[i] = (float)sqrt(somme / (double)comptes);
++				mesure[i] = true;
++				combien++;
++			}
++		}
++
++		if (combien == 0)
++		{
++			autoState.store(-1, std::memory_order_release);
++			return;
++		}
++
++		// Reference : la MEDIANE des niveaux mesures. Elle repartit la
++		// correction au lieu de tout tirer vers le plus faible, et se calcule
++		// sans logarithme -- ceux de la glibc sont hors de portee ici.
++		float tries[NUM_FAVS];
++		int n = 0;
++
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (mesure[i])
++				tries[n++] = niveaux[i];
++		}
++
++		for (int a = 1; a < n; a++)
++		{
++			const float v = tries[a];
++			int b = a - 1;
++
++			while (b >= 0 && tries[b] > v)
++			{
++				tries[b + 1] = tries[b];
++				b--;
++			}
++
++			tries[b + 1] = v;
++		}
++
++		const float reference = (n % 2 == 1) ? tries[n / 2]
++			: 0.5f * (tries[n / 2 - 1] + tries[n / 2]);
++
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (!mesure[i])
++			{
++				autoGainMilli[i].store(0, std::memory_order_release);
++				continue;
++			}
++
++			float db = 20.0f * nam_log10f(reference / niveaux[i]);
++
++			// borne de securite : jamais plus de 12 dB dans un sens ou l'autre
++			if (db > 12.0f) db = 12.0f;
++			if (db < -12.0f) db = -12.0f;
++
++			autoGainMilli[i].store((int)(db * 1000.0f), std::memory_order_release);
++		}
++
++		autoState.store(2, std::memory_order_release);
++
++		// Mesurer puis appliquer sont UN SEUL geste : demander l'ecriture des
++		// boutons des que la mesure aboutit. Le thread audio s'en chargera,
++		// l'extension kx ne s'appelle pas depuis le worker.
++		appliquerDemande.store(true, std::memory_order_release);
++	}
++
++	// Demande a l'hote de poser les gains mesures dans les boutons -- ou de
++	// remettre ceux d'avant. Le bouton bouge donc VRAIMENT sous les yeux, et la
++	// valeur est sauvegardee avec la pedalboard comme n'importe quel reglage.
++	void Plugin::ecrire_gains(bool annuler)
++	{
++		if (portreq == nullptr || portreq->request_change == nullptr)
++		{
++			kxEtat = 0;	// l'hote ne fournit pas l'extension
++			return;
++		}
++
++		kxEtat = 1;
++
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			if (ports.favGain[i] == nullptr)
++				continue;
++
++			const uint32_t index = (uint32_t)(34 + i);	// ports fav_gain_1..10
++
++			if (annuler)
++			{
++				if (gainSauve)
++				{
++					const int rep = portreq->request_change(portreq->handle, index,
++						gainAvant[i]);
++					kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
++				}
++			}
++			else
++			{
++				const float correction =
++					autoGainMilli[i].load(std::memory_order_acquire) / 1000.0f;
++
++				const int rep = portreq->request_change(portreq->handle, index, correction);
++				kxEtat = (rep == LV2_CONTROL_INPUT_PORT_CHANGE_SUCCESS) ? 2 : -1;
++			}
++		}
++
++		if (annuler)
++		{
++			gainSauve = false;
++		}
++	}
++
++	void Plugin::appliquer_parametre(LV2_URID cible, const LV2_Atom* valeur)
++	{
++		if (valeur == nullptr)
++			return;
++
++		if (valeur->type == uris.atom_Path && valeur->size > 0
++			&& valeur->size < MAX_FILE_NAME)
++		{
++			if (cible == uris.model_Path)
++			{
++				LV2LoadModelMsg msg = { kWorkTypeLoad, {} };
++				memcpy(msg.path, valeur + 1, valeur->size);
++				pendingIndex.store(-1, std::memory_order_release);
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				return;
++			}
++
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				if (cible != uris.fav_Path[i])
++					continue;
++
++				LV2FavPathMsg msg = { kWorkTypeFavSetPath, i, {} };
++				memcpy(msg.path, valeur + 1, valeur->size);
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				return;
++			}
++		}
++
++		if (valeur->type == uris.atom_String && valeur->size > 0
++			&& valeur->size <= MAX_FAV_NAME)
++		{
++			for (int i = 0; i < NUM_FAVS; i++)
++			{
++				if (cible != uris.fav_Name[i])
++					continue;
++
++				nameSetVus.fetch_add(1, std::memory_order_release);
++
++				LV2FavNameMsg msg = { kWorkTypeFavSetName, i, {} };
++				memcpy(msg.name, valeur + 1, valeur->size);
++				msg.name[MAX_FAV_NAME - 1] = '\0';
++				schedule->schedule_work(schedule->handle, sizeof(msg), &msg);
++				return;
++			}
++		}
++	}
++
++	void Plugin::hmi_addressed(LV2_Handle handle, uint32_t index,
++		LV2_HMI_Addressing addressing, const LV2_HMI_AddressingInfo* info)
++	{
++		auto nam = static_cast<NAM::Plugin*>(handle);
++
++		if (index >= NUM_PORTS_TOTAL)
++			return;
++
++		nam->hmiAddr[index] = addressing;
++
++		// Capacites annoncees. Un info absent OU entierement a zero est traite
++		// comme « tout permis » : refuser d'ecrire dans ce cas revient a ne
++		// jamais rien afficher, et au pire le firmware ignore les envois.
++		const int capsAnnonces = (info != nullptr) ? (int)info->caps : 0;
++
++		nam->hmiCaps[index] = (capsAnnonces != 0) ? capsAnnonces
++			: (LV2_HMI_AddressingCapability_LED
++				| LV2_HMI_AddressingCapability_Label
++				| LV2_HMI_AddressingCapability_Value
++				| LV2_HMI_AddressingCapability_Unit
++				| LV2_HMI_AddressingCapability_Indicator);
++
++		nam->hmiMomentary[index] = (info != nullptr)
++			&& (info->flags & LV2_HMI_AddressingFlag_Momentary) != 0;
++
++		// Le firmware re-adresse les widgets a CHAQUE changement de page : on
++		// s'en sert comme signal pour oublier les caches et tout redessiner.
++		for (int k = 0; k < NUM_PORTS_TOTAL; k++)
++		{
++			nam->hmiLbl[k][0] = '\0';
++			nam->hmiVal[k][0] = '\0';
++		}
++
++		nam->ecranFav.store(-1, std::memory_order_release);
++	}
++
++	void Plugin::hmi_unaddressed(LV2_Handle handle, uint32_t index)
++	{
++		auto nam = static_cast<NAM::Plugin*>(handle);
++
++		// Interdit d'ecrire dans une addressing retiree : on l'oublie aussitot.
++		if (index < NUM_PORTS_TOTAL)
++		{
++			nam->hmiAddr[index] = nullptr;
++			nam->hmiCaps[index] = 0;
++			nam->hmiMomentary[index] = false;
++		}
++	}
++
++	// Ecrit le nom du favori sur le libelle du footswitch Fav Next, et le fait
++	// apparaitre en plein ecran. Sept caracteres au maximum sur un footswitch,
++	// en capitales et sans accent : mesure du banc, pas une preference.
++	// Nom affichable d'un favori : le NOM LIBRE saisi dans l'interface s'il
++	// existe, sinon le nom du fichier sans son dossier ni son extension.
++	// Capitales, sans accent : le firmware ne dessine pas au-dela de 127.
++	void Plugin::nom_favori(int fav, char* sortie, size_t taille) const
++	{
++		sortie[0] = '\0';
++
++		if (fav < 1 || fav > NUM_FAVS)
++			return;
++
++		// Trois sources, dans cet ordre :
++		//  1. le nom CHOISI DANS LA LISTE (port de controle) -- seul canal qui
++		//     traverse l'image Starless, ou la saisie libre ne remonte pas ;
++		//  2. le nom du fichier, sans dossier ni extension.
++		// La saisie libre a ete RETIREE : sur l'image Starless, un parametre de
++		// type chaine ne redescend pas jusqu'au plugin, alors qu'un port de
++		// controle enumere passe toujours.
++		const char* src = nullptr;
++
++		// 1. le nom TAPE dans l'interface, s'il existe
++		if (favNames[fav - 1][0] != '\0')
++			src = favNames[fav - 1];
++
++		if (src == nullptr && ports.favNamePort[fav - 1] != nullptr)
++		{
++			const int choix = (int)*(ports.favNamePort[fav - 1]);
++
++			if (choix > 0 && choix < FAV_NAME_COUNT)
++				src = FAV_NAME_TABLE[choix];
++		}
++
++		if (src == nullptr)
++			src = "";
++
++		if (src[0] == '\0')
++		{
++			const char* p = favPaths[fav - 1];
++			const char* barre = strrchr(p, '/');
++			src = (barre != nullptr) ? barre + 1 : p;
++		}
++
++		size_t j = 0;
++		for (size_t i = 0; src[i] != '\0' && j < taille - 1; i++)
++		{
++			const unsigned char ch = (unsigned char)src[i];
++
++			if (ch >= 128)
++				continue;
++
++			sortie[j++] = (char)toupper(ch);
++		}
++		sortie[j] = '\0';
++
++		// couper l'extension d'un nom de fichier
++		char* point = strrchr(sortie, '.');
++		if (point != nullptr && point != sortie)
++			*point = '\0';
++	}
++
++	void Plugin::ecrire_ecran(int fav, bool changement)
++	{
++		if (hmi == nullptr)
++			return;
++
++		char nom[MAX_FAV_NAME];
++		nom_favori(fav, nom, sizeof(nom));
++
++		if (nom[0] == '\0')
++			memcpy(nom, "AUCUN", 6);
++
++		// libelle du footswitch : sept caracteres utiles
++		char courtLabel[8];
++		size_t n = strnlen(nom, 7);
++		memcpy(courtLabel, nom, n);
++		courtLabel[n] = '\0';
++
++		const int idxNext = IDX_FAV_BROWSE;
++
++		if (changement && fav >= 1)
++		{
++			// plein ecran d'abord : il pose le titre en libelle et gele le reste
++			char titre[16];
++			snprintf(titre, sizeof(titre), "FAV %d", fav);
++			hmi_popup(idxNext, titre, nom);
++			return;
++		}
++
++		hmi_label(idxNext, courtLabel);
++
++		char val[8];
++		if (fav >= 1)
++			snprintf(val, sizeof(val), "F%d", fav);
++		else
++			memcpy(val, "--", 3);
++
++		hmi_value(idxNext, val);
++
++		// Chaque switch de favori porte SON propre nom, pas « Fav 3 ».
++		// Les envois sont filtres par le cache : rien ne part si rien ne change.
++		for (int i = 0; i < NUM_FAVS; i++)
++		{
++			const int port = IDX_FAV_FIRST + i;
++
++			if (hmiAddr[port] == nullptr)
++				continue;
++
++			char nomI[MAX_FAV_NAME];
++			nom_favori(i + 1, nomI, sizeof(nomI));
++
++			char courtI[8];
++			size_t k = strnlen(nomI[0] != '\0' ? nomI : "VIDE", 7);
++			memcpy(courtI, nomI[0] != '\0' ? nomI : "VIDE", k);
++			courtI[k] = '\0';
++
++			hmi_label(port, courtI);
++			hmi_value(port, (fav == i + 1) ? "ACTIF" : "-");
++		}
++	}
++
++	void Plugin::write_fav_path(int slot)
++	{
++		if (slot < 0 || slot >= NUM_FAVS)
++			return;
++
++		const uint32_t len = (uint32_t)strnlen(favPaths[slot], MAX_FILE_NAME);
++
++		LV2_Atom_Forge_Frame frame;
++
++		lv2_atom_forge_frame_time(&atom_forge, 0);
++		lv2_atom_forge_object(&atom_forge, &frame, 0, uris.patch_Set);
++
++		lv2_atom_forge_key(&atom_forge, uris.patch_property);
++		lv2_atom_forge_urid(&atom_forge, uris.fav_Path[slot]);
++		lv2_atom_forge_key(&atom_forge, uris.patch_value);
++		lv2_atom_forge_path(&atom_forge, favPaths[slot], len + 1);
++
++		lv2_atom_forge_pop(&atom_forge, &frame);
++	}
++
++	// Annonce un nom a l'hote. Lecon de la banque de CV : state:interface ne
++	// suffit PAS -- le host n'ecrit dans la pedalboard que ce qu'il a appris par
++	// une notification. Sans ce patch:Set, les noms seraient perdus au
++	// rechargement, exactement comme les Name N Text l'avaient ete.
++	void Plugin::write_fav_name(int slot)
++	{
++		if (slot < 0 || slot >= NUM_FAVS)
++			return;
++
++		const uint32_t len = (uint32_t)strnlen(favNames[slot], MAX_FAV_NAME);
++
++		LV2_Atom_Forge_Frame frame;
++
++		lv2_atom_forge_frame_time(&atom_forge, 0);
++		lv2_atom_forge_object(&atom_forge, &frame, 0, uris.patch_Set);
++
++		lv2_atom_forge_key(&atom_forge, uris.patch_property);
++		lv2_atom_forge_urid(&atom_forge, uris.fav_Name[slot]);
++		lv2_atom_forge_key(&atom_forge, uris.patch_value);
++		lv2_atom_forge_string(&atom_forge, favNames[slot], len);
++
++		lv2_atom_forge_pop(&atom_forge, &frame);
++	}
++
+ 	void Plugin::write_current_path()
+ 	{
+ 		LV2_Atom_Forge_Frame frame;
+diff --git a/src/nam_plugin.h b/src/nam_plugin.h
+index 318819e..daebe86 100644
+--- a/src/nam_plugin.h
++++ b/src/nam_plugin.h
+@@ -1,6 +1,14 @@
+ #pragma once
+ 
+ #include <array>
++#include <atomic>
++#include "lv2-hmi.h"
++#include "control-input-port-change-request.h"
++
++extern "C" const char* nam_build_tag(void);
++#include "fav_names.h"
++#include <string>
++#include <vector>
+ #include <cstddef>
+ #include <cstdint>
+ #include <random>
+@@ -23,7 +31,7 @@
+ 
+ #include <NeuralAudio/NeuralModel.h>
+ 
+-#define PlUGIN_URI "http://github.com/mikeoliphant/neural-amp-modeler-lv2"
++#define PlUGIN_URI "http://remy.local/nam-test"
+ #define MODEL_URI PlUGIN_URI "#model"
+ 
+ namespace NAM {
+@@ -32,7 +40,72 @@ namespace NAM {
+ 	enum LV2WorkType {
+ 		kWorkTypeLoad,
+ 		kWorkTypeSwitch,
+-		kWorkTypeFree
++		kWorkTypeFree,
++		kWorkTypeScan,		// relire le dossier des modeles (hors thread audio)
++		kWorkTypeSelect,	// choisir un modele par son rang dans la liste
++		kWorkTypeFavLoad,	// charger le favori d'un emplacement
++		kWorkTypeFavStore,	// ranger le modele courant dans un emplacement
++		kWorkTypeFavSetPath,	// poser le chemin d'un favori (venu de l'interface)
++		kWorkTypeFavSetName,	// poser le nom libre d'un favori
++		kWorkTypeTrace,		// ecrire l'etat dans un fichier, pour diagnostic
++		kWorkTypeAutoGain	// mesurer le niveau de chaque favori, hors temps reel
++	};
++
++	// Le journal du plugin ne ressort pas sur cette machine et les ports de
++	// sortie ne sont pas lisibles dans le panneau : on ecrit donc l'etat dans
++	// un fichier, seul canal qui ne depende ni du navigateur ni du journal.
++	static constexpr const char* TRACE_PATH = "/tmp/nam_test_state.txt";
++
++	static constexpr unsigned int MAX_FAV_NAME = 64;
++
++	static constexpr int NUM_FAVS = 10;
++	static constexpr int NUM_PORTS_TOTAL = 95;
++	// duree au-dela de laquelle un appui devient long, en millisecondes
++	// Indices codes en dur, verifies par script contre le descripteur.
++	// Interrupteur d'isolement : a true, le plugin n'ecrit plus rien sur l'ecran
++	// de la machine. Sert a savoir si le plantage au deplacement d'un bloc vient
++	// de la, l'assignation etant prise et rendue par un autre fil.
++	static constexpr bool HMI_DESACTIVE = false;
++
++	static constexpr int IDX_FAV_BROWSE = 33;
++	static constexpr int IDX_FAV_FIRST = 18;
++
++	static constexpr int LONG_PRESS_MS = 800;
++	// Au-dela, ce n'est plus un appui du pied mais un bouton laisse sur ON dans
++	// le navigateur : on ne range pas, sinon chaque clic ecraserait un favori.
++	static constexpr int LONG_PRESS_MAX_MS = 5000;
++
++	// Dossier scanne pour la navigation au pied
++	static constexpr const char* MODEL_DIR = "/data/user-files/NAM Models";
++	static constexpr int MAX_MODELS = 200;
++
++	struct LV2ScanMsg {
++		LV2WorkType type;
++	};
++
++	struct LV2SelectMsg {
++		LV2WorkType type;
++		int32_t absolute;	// rang vise, ou -1
++		int32_t delta;		// deplacement relatif si absolute vaut -1
++	};
++
++	struct LV2FavPathMsg {
++		LV2WorkType type;
++		int32_t slot;
++		char path[MAX_FILE_NAME];
++	};
++
++	struct LV2FavNameMsg {
++		LV2WorkType type;
++		int32_t slot;
++		char name[MAX_FAV_NAME];
++	};
++
++	struct LV2FavMsg {
++		LV2WorkType type;
++		int32_t slot;		// 0 a NUM_FAVS-1
++		int32_t index;		// rang a ranger, saisi AVANT le chargement, ou -1
++		int32_t gainMilli;	// gain a ranger, en millidecibels
+ 	};
+ 
+ 	struct LV2LoadModelMsg {
+@@ -61,6 +134,49 @@ namespace NAM {
+ 			float* input_level;
+ 			float* output_level;
+ 			float* quality_scale;
++			// Ports ajoutes a la FIN, indices 7 et suivants.
++			// connect_port() indexe cette structure par le numero de port :
++			// ne JAMAIS inserer un champ ailleurs qu'a la fin.
++			// Ports ajoutes a la FIN, indices 7 et suivants. connect_port()
++			// indexe cette structure par le numero de port : l'ordre ci-dessous
++			// est celui du descripteur, verifie par script a chaque livraison.
++			float* model_index;		// 7
++			float* step_next;		// 8
++			float* step_prev;		// 9
++			float* rescan;			// 10
++			float* model_count;		// 11 sortie
++			float* current_index;		// 12 sortie
++			float* load_status;		// 13 sortie
++			float* browse;			// 14
++			float* action;			// 15
++			float* browse_index;		// 16 sortie
++			float* active_fav;		// 17 sortie
++			float* fav[NUM_FAVS];		// 18..27
++			float* store_slot;		// 28
++			float* store;			// 29
++			float* fav_gain;		// 30
++			float* applied_gain;		// 31 sortie
++			float* store_count;		// 32 sortie
++			float* fav_browse;		// 33
++			float* favGain[NUM_FAVS];	// 34..43
++			float* favIndex[NUM_FAVS];	// 44..53 sorties
++			float* cycle_count;		// 54
++			float* hmi_state;		// 55 sortie
++			float* favNamePort[NUM_FAVS];	// 56..65
++			float* favStore[NUM_FAVS];	// 66..75
++			float* auto_gain;		// 76
++			float* auto_state;		// 77 sortie
++			float* auto_offset;		// 78 sortie
++			float* cv_select;		// 79 entree CV, 0 a 10 V
++			float* web_slot;		// 80 favori vise par la saisie
++			float* web_char;		// 81 code du caractere
++			float* web_strobe;		// 82 tout changement fait lire un caractere
++			float* name_slot;		// 83 sortie : de qui n1..n7 portent le nom
++			float* nameChar[7];		// 84..90 sorties : les sept caracteres
++			float* auto_db_slot;		// 91 sortie : correction de ce favori
++			float* auto_apply;		// 92 ecrire les corrections dans les gains
++			float* auto_undo;		// 93 remettre les gains d'avant
++			float* kx_state;		// 94 sortie : 0 absent, 1 present, 2 accepte, -1 refuse
+ 		};
+ 
+ 		Ports ports = {};
+@@ -87,6 +203,41 @@ namespace NAM {
+ 
+ 		void write_current_path();
+ 
++		// Liste des modeles : ecrite et lue UNIQUEMENT par le thread du worker,
++		// donc sans verrou. Le thread audio ne touche que les deux atomiques.
++		std::vector<std::string> modelFiles;
++		std::atomic<int> modelCount{0};
++		std::atomic<int> selectedIndex{-1};
++		std::atomic<int> pendingIndex{-1};	// rang demande, valide seulement s'il aboutit
++		std::atomic<int> loadStatus{0};
++		std::atomic<int> loadCount{0};		// nombre de chargements reussis, pour voir bouger
++
++		void scan_models();
++
++		// Favoris : chemins detenus par le thread du WORKER uniquement
++		char favPaths[NUM_FAVS][MAX_FILE_NAME] = {};
++		// noms tapes dans l'interface, recus caractere par caractere
++		char favNames[NUM_FAVS][MAX_FAV_NAME] = {};
++		std::atomic<unsigned> favNameDirty{0};
++		std::atomic<int> putVus{0};	// compteurs de diagnostic, lus dans la trace
++		std::atomic<int> nameSetVus{0};
++		std::atomic<unsigned> favDirty{0};	// bits des favoris a annoncer a l'interface
++		// rang de chaque favori dans la liste scannee, -1 si vide ou introuvable.
++		// Publie par des ports de SORTIE : c'est ainsi que la pedale retrouve le
++		// nom a afficher, sans avoir a le deviner dans le DOM.
++		std::atomic<int> favIndexes[NUM_FAVS];
++		std::atomic<int> activeFav{0};		// 0 = aucun, 1 a 8
++		std::atomic<int> browseIndex{0};
++		// gain applique en ce moment : celui du favori charge, ou celui du
++		// bouton si l'utilisateur y a touche depuis
++		std::atomic<int> appliedGainMilli{0};	// en millidecibels, pour rester atomique
++		std::atomic<int> gainToStore{0};
++		std::atomic<int> storeCount{0};
++
++		static void hmi_addressed(LV2_Handle handle, uint32_t index,
++			LV2_HMI_Addressing addressing, const LV2_HMI_AddressingInfo* info);
++		static void hmi_unaddressed(LV2_Handle handle, uint32_t index);
++
+ 		static uint32_t options_get(LV2_Handle instance, LV2_Options_Option* options);
+ 		static uint32_t options_set(LV2_Handle instance, const LV2_Options_Option* options);
+ 
+@@ -109,10 +260,16 @@ namespace NAM {
+ 			LV2_URID bufSize_maxBlockLength;
+ 			LV2_URID patch_Set;
+ 			LV2_URID patch_Get;
++			LV2_URID patch_Put;
++			LV2_URID patch_body;
+ 			LV2_URID patch_property;
+ 			LV2_URID patch_value;
+ 			LV2_URID units_frame;
+ 			LV2_URID model_Path;
++			LV2_URID atom_String;
++			LV2_URID favs_String;
++			LV2_URID fav_Path[NUM_FAVS];
++			LV2_URID fav_Name[NUM_FAVS];
+ 		};
+ 
+ 		URIs uris = {};
+@@ -120,6 +277,112 @@ namespace NAM {
+ 		LV2_Atom_Forge atom_forge = {};
+ 		LV2_Atom_Forge_Frame sequence_frame;
+ 
++		bool scanRequested = false;
++		bool indexPortSeen = false;
++		float prevIndexPort = 0;
++		float prevStepNext = 0;
++		float prevStepPrev = 0;
++		float prevRescan = 0;
++		float prevBrowse = 0;
++		float prevAction = 0;
++		float prevStore = 0;
++		float favGainPortAtLoad = 0;
++		bool favGainSeen = false;
++		bool storeSeen = false;
++		bool rescanSeen = false;
++		float prevFav[NUM_FAVS] = {};
++		uint32_t favHeldSamples[NUM_FAVS] = {};
++		bool favLongDone[NUM_FAVS] = {};
++		// ce qui jouait juste avant l'appui : c'est CELA qu'un maintien range,
++		// pas le favori que l'appui vient de charger
++		int32_t favPressIndex[NUM_FAVS] = {};
++		int32_t favPressGain[NUM_FAVS] = {};
++		bool favSeen[NUM_FAVS] = {};
++		float prevFavBrowse = 0;
++		bool favBrowseSeen = false;
++		uint32_t favBrowseHeld = 0;	// duree de l'etat haut, en echantillons
++		float prevFavName[NUM_FAVS] = {};
++		float prevFavStore[NUM_FAVS] = {};
++		float prevAutoGain = 0;
++		float prevStrobe = 0;
++		bool strobeSeen = false;
++		float prevWebChar = 0;
++		bool webCharSeen = false;
++		bool ecranForce = false;
++		uint32_t rotationCompteur = 0;	// cadence du canal de retour
++		int rotationSlot = 0;	// redessiner sans declencher le plein ecran
++		uint64_t vieEchantillons = 0;	// age du plugin, pour ignorer la restauration
++		int cvBande = -1;	// bande CV en cours, pour ne charger qu'au changement
++		bool autoGainSeen = false;
++
++		// Correction mesuree pour chaque favori, en millidecibels. Elle s'AJOUTE
++		// au gain manuel : le plugin ne peut pas ecrire dans ses propres ports
++		// d'entree, donc les boutons de gain restent la propriete de l'hote.
++		std::atomic<int> autoGainMilli[NUM_FAVS];
++		std::atomic<int> autoState{0};
++
++		void mesurer_niveaux();
++
++		// Ecrire dans ses PROPRES ports d'entree : impossible directement, mais
++		// l'extension kx permet de le DEMANDER a l'hote. Recette reprise de MFX.
++		const LV2_ControlInputPort_Change_Request* portreq = nullptr;
++		float gainAvant[NUM_FAVS] = {};		// pour le bouton Annuler
++		bool gainSauve = false;
++		std::atomic<bool> appliquerDemande{false};
++		std::atomic<bool> annulerDemande{false};
++		int kxEtat = 0;
++		int webVus = 0;		// temoin : ce que l'hote a repondu a la derniere demande
++		float prevAutoApply = 0;
++		float prevAutoUndo = 0;
++		bool autoApplySeen = false;
++		bool autoUndoSeen = false;
++
++		void ecrire_gains(bool annuler);
++		bool favStoreSeen[NUM_FAVS] = {};
++
++		void appliquer_parametre(LV2_URID cible, const LV2_Atom* valeur);
++		void write_fav_path(int slot);
++		void write_fav_name(int slot);
++
++		// --- ecran de la machine (HMI) --------------------------------
++		// Le host prete une « addressing » par port assigne a un actuateur.
++		// On la garde et on ecrit dedans : libellé du footswitch, et popup.
++		const LV2_HMI_WidgetControl* hmi = nullptr;
++		size_t hmiSize = 0;
++		LV2_HMI_Addressing hmiAddr[NUM_PORTS_TOTAL] = {};
++
++
++
++		void nom_favori(int fav, char* sortie, size_t taille) const;
++		void ecrire_ecran(int fav, bool changement);
++		std::atomic<int> ecranFav{-1};	// favori dont l'affichage reste a faire
++		uint32_t ecranCompteur = 0;	// echantillons depuis le dernier rafraichissement
++		uint32_t ecranPeriode = 0;	// 250 ms en echantillons
++		int hmiCaps[NUM_PORTS_TOTAL] = {};
++		// Le host DIT si l'assignation est momentanee : on ne le devine pas.
++		// Momentane = agir au seul front montant (sinon le relachement
++		// declenche une SECONDE fois : deux chargements par appui, et un cycle
++		// qui avance de deux crans).
++		bool hmiMomentary[NUM_PORTS_TOTAL] = {};
++		char hmiLbl[NUM_PORTS_TOTAL][16] = {};	// dernier libelle envoye
++		char hmiVal[NUM_PORTS_TOTAL][16] = {};	// derniere valeur envoyee
++		uint64_t hmiPos = 0;		// position en echantillons
++		uint64_t popupAt = 0;		// debut du dernier plein ecran
++		uint64_t popupHold = 0;		// 3 s en echantillons
++		uint32_t traceCompteur = 0;
++		uint32_t tracePeriode = 0;
++
++		bool popup_en_cours() const
++		{
++			return popupAt != 0 && (hmiPos - popupAt) < popupHold;
++		}
++
++		void hmi_label(int port, const char* txt);
++		void hmi_value(int port, const char* txt);
++		void hmi_popup(int port, const char* titre, const char* message);
++		uint32_t longPressSamples = 0;		// seuil converti en echantillons
++		uint32_t longPressMaxSamples = 0;	// plafond, au-dela c'est la souris
++
+ 		float inputLevel = 0;
+ 		float outputLevel = 0;
+ 		int32_t maxBufferSize = 512;

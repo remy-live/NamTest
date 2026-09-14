@@ -1,0 +1,295 @@
+/* nam */
+
+@import url(/fonts/nexa/stylesheet.css);
+@import url(/fonts/questrial/stylesheet.css);
+
+/* = CONTAINER
+================================================ */
+.mod-pedal-nam {
+    background-position:center center;
+    background-repeat:no-repeat;
+    /* background image is 1121 × 536*/
+    background-size:560px 268px;
+    background-image:url(/resources/background.png{{{ns}}});
+    width:560px;
+    height:268px;
+    position:absolute;
+    border-radius:40px;
+}
+
+/* = BYPASS
+================================================ */
+.mod-pedal-nam .mod-footswitch {
+    background-image:url(/resources/bypass_on.png{{{ns}}});
+    background-position:center center;
+    background-repeat:no-repeat;
+    background-size:82px 47px;
+    width:82px;
+    height:47px;
+    top:132px;
+    left:235px;
+    cursor:pointer;
+    position:absolute;
+}
+.mod-pedal-nam .mod-footswitch.on {
+    background-image:url(/resources/bypass_off.png{{{ns}}});
+}
+
+/* = KNOBS
+================================================ */
+.mod-pedal-nam .mod-control-group {
+    z-index:30;
+    position:relative;
+    margin:0px;
+    padding:0px;
+    display:inline;
+}
+
+.mod-pedal-nam .group1 {
+    top:86px;
+    left:22px;
+}
+
+.mod-pedal-nam .group2 {
+    top:107px;
+    left:78px;
+}
+
+.mod-pedal-nam .mod-control-group .mod-knob .mod-knob-title {
+    text-align: center;
+    color:white;
+}
+
+.mod-pedal-nam .mod-control-group .mod-knob {
+    overflow:hidden;
+    position:relative;
+    display:inline-block;
+}
+
+.mod-pedal-nam .mod-control-group .mod-knob:first-child {
+    margin-left: 0px;
+}
+
+.mod-pedal-nam .mod-control-group .mod-knob:last-child {
+    margin-left: 315px;
+}
+
+.mod-pedal-nam .mod-control-group .mod-knob .mod-knob-image {
+    background-image:url(/resources/knob.png{{{ns}}});
+    background-position:left center;
+    background-repeat:no-repeat;
+    background-size:5000px 100px;
+    height:100px;
+    width:100px;
+    cursor:pointer;
+}
+
+.mod-pedal-nam .mod-enumerated {
+    position: relative;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+}
+
+.mod-pedal-nam .mod-enumerated .mod-enumerated-selected {
+    padding-left: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    background-color: transparent;
+    color: white;
+    display: block;
+}
+
+/* THE LIST OF OPTIONS */
+.mod-pedal-nam .mod-enumerated .mod-enumerated-list {
+    background: black;
+    display: none;
+    overflow: auto;
+    position: absolute;
+    padding: 0;
+    width: 405px;
+    height: 220px;
+    border: 2px solid #333;
+}
+
+.mod-pedal-nam .mod-enumerated .mod-enumerated-list > div {
+    padding: 3px 5px;
+}
+
+.mod-pedal-nam .mod-enumerated .mod-enumerated-list > div.selected {
+    background: #333;
+}
+
+.mod-pedal-nam .mod-enumerated .mod-enumerated-list > div:hover {
+    background: #222;
+}
+
+.mod-pedal-nam .mod-enumerated .mod-enumerated-list > div.selected:hover {
+    background: #555;
+}
+
+
+/* = PANNEAU DE REGLAGES (gabarit settings.html)
+================================================
+   Ce bloc avait ete PERDU en restaurant la feuille de style d'origine depuis
+   le depot : sans lui, le gabarit s'affiche sans grille ni ordre, les listes
+   restent deployees et se recouvrent, et les clics n'atteignent plus les
+   fichiers. */
+.x-set{{{cns}}} .x-sec-grid {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-start;
+}
+.x-set{{{cns}}} .x-break { flex:0 0 100%; height:0; margin:0; }
+.x-set{{{cns}}} .x-line-title {
+    flex:0 0 100%;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:#b08ad0;
+    padding:10px 0 4px 4px;
+    border-top:1px solid rgba(255,255,255,0.12);
+}
+
+/* Le selecteur de fichier de mod-ui est une LISTE DEROULEE EN PLACE, pas une
+   ligne qui s'ouvre. Vouloir la refermer et la faire flotter la faisait
+   deborder sur la ligne suivante. On lui donne donc une hauteur fixe, et le
+   defilement se fait A L'INTERIEUR. */
+.x-set{{{cns}}} .x-file {
+    flex:0 0 330px;
+    height:132px;
+    margin-right:10px !important;
+    overflow:hidden;
+    position:relative;
+}
+.x-set{{{cns}}} .x-file .mod-enumerated-selected {
+    padding:0 6px;
+    height:22px;
+    line-height:22px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:#fff;
+    font-size:11px;
+}
+.x-set{{{cns}}} .x-file .mod-enumerated-list {
+    position:static;
+    max-height:104px;
+    overflow-y:auto;
+    background:rgba(0,0,0,0.35);
+    border-radius:4px;
+}
+.x-set{{{cns}}} .x-file [mod-role="enumeration-option"] {
+    font-size:11px;
+    padding:3px 6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+}
+.x-set{{{cns}}} .x-file [mod-role="enumeration-option"]:hover { background:#4a3a5a; color:#fff; }
+
+/* les cellules voisines s'alignent en haut de la ligne, pas au milieu */
+.x-set{{{cns}}} .x-sec-grid { align-items:flex-start; }
+
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#model"] { order:10; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav1"] { order:110; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav2"] { order:120; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav3"] { order:130; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav4"] { order:140; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav5"] { order:150; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav6"] { order:160; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav7"] { order:170; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav8"] { order:180; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav9"] { order:190; }
+.x-set{{{cns}}} .x-file[mod-parameter-uri$="#fav10"] { order:200; }
+
+
+/* = PEDALE : n'y montrer que le MODELE COURANT
+   Le gabarit d'origine boucle sur tous les parametres fichier ; avec dix
+   favoris cela faisait onze listes empilees qui debordaient du boitier.
+   Les favoris se reglent dans le panneau. */
+.mod-pedal-nam [mod-parameter-uri*="#fav"] { display:none !important; }
+
+/* = PANNEAU : borner TOUTES les listes, pas seulement celles de fichiers
+   Un widget enumere de mod-ui s'affiche deroule en place. Sans hauteur fixe,
+   les listes de noms recouvrent les lignes voisines. */
+.x-set{{{cns}}} .mod-enumerated {
+    height:132px;
+    overflow:hidden;
+    position:relative;
+}
+.x-set{{{cns}}} .mod-enumerated .mod-enumerated-list {
+    position:static;
+    max-height:100px;
+    overflow-y:auto;
+    background:rgba(0,0,0,0.35);
+    border-radius:4px;
+}
+.x-set{{{cns}}} .mod-enumerated [mod-role="enumeration-option"] {
+    font-size:11px;
+    padding:3px 6px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    cursor:pointer;
+}
+
+/* toutes les cellules d'une ligne font la meme hauteur, alignees en haut */
+
+
+/* Ne RIEN imposer aux cellules natives : mod-ui place ses etiquettes en absolu
+   a l'interieur, et une hauteur ou une largeur forcee les fait chevaucher le
+   bouton. On se contente de ne pas les laisser flotter. */
+.x-set{{{cns}}} .x-cell { float:none !important; position:relative; }
+
+/* Seules les listes sont bornees -- elles seules debordent. */
+.x-set{{{cns}}} .mod-enumerated { height:126px; overflow:hidden; }
+.x-set{{{cns}}} .mod-enumerated .mod-enumerated-list {
+    position:static;
+    max-height:96px;
+    overflow-y:auto;
+}
+
+
+/* champs de saisie des noms, dans le panneau */
+.x-set{{{cns}}} .nam-typed {
+    flex:0 0 190px;
+    height:126px;
+    padding-top:8px;
+    box-sizing:border-box;
+}
+.x-set{{{cns}}} .nam-typed-title {
+    display:block;
+    font-size:10px;
+    color:#9a7fb8;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:6px;
+}
+.x-set{{{cns}}} .nam-typed-input {
+    width:170px;
+    height:26px;
+    background:#141414;
+    border:1px solid #4a3a5a;
+    border-radius:4px;
+    color:#fff;
+    font-family:"Questrial", sans-serif;
+    font-size:13px;
+    padding:0 8px;
+    box-sizing:border-box;
+}
+
+
+
+
+
+/* correction mesuree par l'auto-gain, affichee a cote du champ de nom */
+.x-set{{{cns}}} .nam-auto {
+    display:block;
+    margin-top:6px;
+    font-size:11px;
+    color:#6e6e6e;
+}
+.x-set{{{cns}}} .nam-auto.nam-auto-vif { color:#8fd98f; }

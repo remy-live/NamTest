@@ -1,0 +1,34 @@
+@prefix modgui: <http://moddevices.com/ns/modgui#>.
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#>.
+
+<http://remy.local/nam-test>
+    modgui:gui [
+        modgui:resourcesDirectory <modgui>;
+        modgui:iconTemplate <modgui/icon-nam.html>;
+        modgui:stylesheet <modgui/stylesheet-nam.css>;
+        modgui:settingsTemplate <modgui/settings.html>;
+        modgui:javascript <modgui/script-nam.js>;
+        modgui:monitoredOutputs [ lv2:symbol "name_slot" ] ,
+                                [ lv2:symbol "n1" ] ,
+                                [ lv2:symbol "n2" ] ,
+                                [ lv2:symbol "n3" ] ,
+                                [ lv2:symbol "n4" ] ,
+                                [ lv2:symbol "n5" ] ,
+                                [ lv2:symbol "n6" ] ,
+                                [ lv2:symbol "n7" ] ,
+                                [ lv2:symbol "auto_db_slot" ] ,
+                                [ lv2:symbol "auto_state" ];
+
+        modgui:screenshot <modgui/screenshot-nam.png>;
+        modgui:thumbnail <modgui/thumbnail-nam.png>;
+        modgui:discussionURL <https://forum.mod.audio/t/neural-amp-modeler/10112> ;
+        modgui:port [
+            lv2:index 0;
+            lv2:symbol "input_level";
+            lv2:name "Input Lvl";
+        ], [
+            lv2:index 1;
+            lv2:symbol "output_level";
+            lv2:name "Output Lvl";
+        ];
+    ].

@@ -1,0 +1,12 @@
+/* N'exporter QUE le point d'entree LV2.
+ *
+ * mod-host charge tous les plugins dans un seul processus. Ce fork et le NAM du
+ * magasin partagent le meme code, donc les memes noms de symboles C++ : sans ce
+ * script, le premier charge l'emporte pour les deux et le serveur audio tombe.
+ */
+{
+    global:
+        lv2_descriptor;
+    local:
+        *;
+};
